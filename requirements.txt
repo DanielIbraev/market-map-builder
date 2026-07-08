@@ -1,0 +1,10 @@
+# Core
+anthropic>=0.40.0      # Claude API + web_search server tool (live research engine)
+pydantic>=2.5,<3       # typed Company / SectorResearch models + validation
+python-dotenv>=1.0     # load ANTHROPIC_API_KEY from .env (never hardcoded)
+typer>=0.12            # CLI
+rich>=13.0             # pretty live progress output
+
+# Note: `anthropic` is only imported lazily, inside the live research path.
+# The offline `--mock` engine runs with just pydantic + typer + rich, so you
+# can build and test the whole vault pipeline for free with no API key.
