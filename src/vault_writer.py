@@ -98,10 +98,168 @@ def verify_vault_links(sector_dir: str) -> List[Tuple[str, str]]:
 
 
 # ---------------------------------------------------------------------------
+# Single-artifact writers (used by refresh so it can update in place)
+# ---------------------------------------------------------------------------
+
+def company_note_path(vault_path: str, research: SectorResearch, company: Company) -> str:
+    return os.path.join(vault_path, research.sector_slug, company.slug + ".md")
+
+
+def write_company_note(
+    company: Company,
+    research: SectorResearch,
+    vault_path: str,
+    changelog: Optional[List[str]] = None,
+) -> str:
+    os.makedirs(os.path.join(vault_path, research.sector_slug), exist_ok=True)
+    path = company_note_path(vault_path, research, company)
+    _write_file(path, _render_company_note(company, research, changelog=changelog))
+    return path
+
+
+def write_hub_note(
+    research: SectorResearch, vault_path: str, summary: Optional[str] = None
+) -> str:
+    os.makedirs(os.path.join(vault_path, research.sector_slug), exist_ok=True)
+    if summary is None:
+        summary = generate_landscape_summary(research)
+    path = os.path.join(vault_path, research.sector_slug, "_%s-map.md" % research.sector_slug)
+    _write_file(path, _render_hub_note(research, summary))
+    return path
+
+
+# ---------------------------------------------------------------------------
+# Note parsing (read an existing note back into a Company + its changelog)
+# ---------------------------------------------------------------------------
+
+_PLACEHOLDER_RE = re.compile(r"^_.*_$")
+
+
+def parse_company_note(text: str) -> dict:
+    """Best-effort parse of a generated note back into comparable fields.
+
+    Only extracts what refresh diffs on; formatting/round-trip fidelity is not
+    a goal. Returns a dict of the Company-ish fields plus 'changelog' (raw lines).
+    """
+    out = {
+        "name": "",
+        "one_line_description": "",
+        "founded_year": None,
+        "funding_stage": "unknown",
+        "total_funding_disclosed": "undisclosed",
+        "key_differentiator": "",
+        "target_customer": "",
+        "related_companies": [],
+        "source_urls": [],
+        "changelog": [],
+    }
+
+    # Frontmatter
+    fm_match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
+    if fm_match:
+        for line in fm_match.group(1).splitlines():
+            m = re.match(r"^([a-zA-Z_]+):\s*(.*)$", line)
+            if not m:
+                continue
+            key, val = m.group(1), m.group(2).strip()
+            val = _unquote_yaml(val)
+            if key == "company":
+                out["name"] = val
+            elif key == "funding_stage":
+                out["funding_stage"] = val or "unknown"
+            elif key == "founded":
+                out["founded_year"] = int(val) if val.isdigit() else None
+
+    # Title (authoritative name if present)
+    title = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
+    if title:
+        out["name"] = title.group(1).strip()
+
+    out["one_line_description"] = _clean_para(_section_between(text, r"^#\s+.+$", "## Details"))
+    out["key_differentiator"] = _clean_para(
+        _section_between(text, "## What makes them different", "##")
+    )
+
+    details = _section_between(text, "## Details", "##")
+    out["total_funding_disclosed"] = _detail(details, "Total disclosed funding") or "undisclosed"
+    out["target_customer"] = _detail(details, "Target customer") or ""
+    founded_detail = _detail(details, "Founded")
+    if out["founded_year"] is None and founded_detail and founded_detail.isdigit():
+        out["founded_year"] = int(founded_detail)
+
+    related_block = _section_between(text, "## Related companies", "##")
+    for target, alias in re.findall(r"\[\[([^\]\|]+)(?:\|([^\]]*))?\]\]", related_block):
+        out["related_companies"].append((alias or target).strip())
+
+    sources_block = _section_between(text, "## Sources", "##")
+    for line in sources_block.splitlines():
+        line = line.strip()
+        if line.startswith("- ") and "http" in line:
+            out["source_urls"].append(line[2:].strip())
+
+    out["changelog"] = extract_changelog(text)
+    return out
+
+
+def reconstruct_company(parsed: dict) -> Company:
+    """Rebuild a Company from a parsed note (for companies not re-found)."""
+    return Company(
+        name=parsed.get("name") or "Unknown",
+        one_line_description=parsed.get("one_line_description", ""),
+        founded_year=parsed.get("founded_year"),
+        funding_stage=parsed.get("funding_stage", "unknown"),
+        total_funding_disclosed=parsed.get("total_funding_disclosed", "undisclosed"),
+        key_differentiator=parsed.get("key_differentiator", ""),
+        target_customer=parsed.get("target_customer", ""),
+        related_companies=list(parsed.get("related_companies", [])),
+        source_urls=list(parsed.get("source_urls", [])),
+    )
+
+
+def extract_changelog(text: str) -> List[str]:
+    """Return the raw '- ...' bullet lines under an existing '## Changelog'."""
+    block = _section_between(text, "## Changelog", "##")
+    return [ln.rstrip() for ln in block.splitlines() if ln.strip().startswith("- ")]
+
+
+def _section_between(text: str, start_pat: str, stop_literal: str) -> str:
+    m = re.search(start_pat, text, re.MULTILINE)
+    if not m:
+        return ""
+    rest = text[m.end():]
+    stop = rest.find("\n" + stop_literal)
+    return (rest if stop < 0 else rest[:stop]).strip()
+
+
+def _detail(details_block: str, label: str) -> str:
+    m = re.search(r"-\s*\*\*%s:\*\*\s*(.+)" % re.escape(label), details_block)
+    return m.group(1).strip() if m else ""
+
+
+def _clean_para(text: str) -> str:
+    text = text.strip()
+    if not text or _PLACEHOLDER_RE.match(text):
+        return ""
+    # Collapse the (usually single) paragraph into one line.
+    return " ".join(text.split())
+
+
+def _unquote_yaml(val: str) -> str:
+    val = val.strip()
+    if len(val) >= 2 and val[0] == '"' and val[-1] == '"':
+        return val[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+    return val
+
+
+# ---------------------------------------------------------------------------
 # Rendering
 # ---------------------------------------------------------------------------
 
-def _render_company_note(company: Company, research: SectorResearch) -> str:
+def _render_company_note(
+    company: Company,
+    research: SectorResearch,
+    changelog: Optional[List[str]] = None,
+) -> str:
     sector_slug = research.sector_slug
     founded = str(company.founded_year) if company.founded_year else "unknown"
 
@@ -147,6 +305,11 @@ def _render_company_note(company: Company, research: SectorResearch) -> str:
 
     if research.source == "mock":
         body += ["", "---", "> ⚠️ **Sample data** (offline mock mode) — illustrative only, verify before citing."]
+
+    # Changelog is always the LAST section so refresh can append to it in place.
+    if changelog:
+        body += ["", "## Changelog"]
+        body += list(changelog)
 
     body.append("")  # trailing newline
     return "\n".join(fm) + "\n".join(body)
