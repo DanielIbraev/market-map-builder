@@ -35,3 +35,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Obsidian per-user state (keep app/graph settings, ignore volatile workspace)
+vault/**/.obsidian/workspace.json
