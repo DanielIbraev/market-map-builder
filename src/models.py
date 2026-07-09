@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -95,8 +95,25 @@ def slugify(text: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+def today_str() -> str:
+    """UTC date as YYYY-MM-DD (used for last_verified stamps)."""
+    return datetime.now(timezone.utc).date().isoformat()
+
+
+def is_unknown(value: Optional[str]) -> bool:
+    """True for the various 'we don't know' spellings a note can carry."""
+    v = " ".join((value or "").split()).strip().lower()
+    return v in ("", "unknown", "undisclosed", "n/a", "none", "—", "-", "_not documented._")
+
+
 class Company(BaseModel):
-    """A single company in a sector map."""
+    """A single company in a sector map.
+
+    Deal-memo fields (last_round, investors, headcount, …) default to
+    empty/unknown — never invented. `citations` maps a lowercase fact label
+    (e.g. "funding", "headcount") to the URL it came from; `last_verified`
+    is the date the note's facts were last confirmed by research.
+    """
 
     name: str
     one_line_description: str = ""
@@ -107,6 +124,20 @@ class Company(BaseModel):
     target_customer: str = ""
     related_companies: List[str] = Field(default_factory=list)
     source_urls: List[str] = Field(default_factory=list)
+
+    # --- deal-memo fields ---------------------------------------------------
+    last_round: str = ""                 # e.g. "Series C · $150M · 2025-11"
+    lead_investors: List[str] = Field(default_factory=list)
+    investors: List[str] = Field(default_factory=list)
+    headcount: str = ""                  # e.g. "~250 (growing)"
+    hq: str = ""                         # e.g. "San Francisco, US"
+    business_model: str = ""             # e.g. "Per-seat SaaS, $20/mo Pro tier"
+    notable_customers: List[str] = Field(default_factory=list)
+    founders: List[str] = Field(default_factory=list)  # public info only
+
+    # --- provenance / freshness ---------------------------------------------
+    citations: Dict[str, str] = Field(default_factory=dict)  # fact label -> URL
+    last_verified: str = ""              # YYYY-MM-DD ('' = unknown)
 
     @field_validator("name")
     @classmethod

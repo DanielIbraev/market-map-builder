@@ -28,6 +28,7 @@ def refresh_sector(
     num_companies: int = 12,
     mock: bool = False,
     quiet: bool = False,
+    portfolio=None,
 ) -> Dict[str, object]:
     """Refresh an existing sector map in place. Returns a change summary."""
     new_research = research_sector(sector, num_companies=num_companies, mock=mock, quiet=quiet)
@@ -38,7 +39,9 @@ def refresh_sector(
 
     # No prior map -> this is effectively a first run.
     if not existing:
-        result = vw.write_vault(new_research, vault_path=vault_path, quiet=quiet)
+        result = vw.write_vault(
+            new_research, vault_path=vault_path, quiet=quiet, portfolio=portfolio
+        )
         return {
             "mode": "created",
             "sector_dir": result["sector_dir"],
@@ -79,7 +82,13 @@ def refresh_sector(
             vw.write_company_note(company, new_research, vault_path, changelog=changelog)
             updated.append((company.name, changes))
         else:
-            unchanged.append(company.name)  # leave the note untouched
+            # Facts re-confirmed this run: bump last_verified (no changelog entry,
+            # not reported as updated — the data itself didn't move).
+            vw.write_company_note(
+                company, new_research, vault_path,
+                changelog=list(prior.get("changelog", [])) or None,
+            )
+            unchanged.append(company.name)
 
     # Companies that were in the vault but not re-found this run: keep their
     # notes as-is, but reconstruct them so the regenerated hub stays complete.
@@ -99,7 +108,7 @@ def refresh_sector(
         researched_at=now,
     )
     summary = generate_landscape_summary(merged, mock=mock)
-    hub_path = vw.write_hub_note(merged, vault_path, summary=summary)
+    hub_path = vw.write_hub_note(merged, vault_path, summary=summary, portfolio=portfolio)
 
     broken = vw.verify_vault_links(sector_dir)
 
@@ -151,12 +160,39 @@ def _diff(prior: dict, new: Company) -> List[str]:
     if _norm(prior.get("one_line_description")) != _norm(new.one_line_description):
         changes.append("description updated")
 
+    # Deal-memo scalar fields ("unknown"/"" treated as equal).
+    for label, key, val in (
+        ("last round", "last_round", new.last_round),
+        ("headcount", "headcount", new.headcount),
+        ("HQ", "hq", new.hq),
+        ("business model", "business_model", new.business_model),
+    ):
+        old_v, new_v = _norm_fact(prior.get(key)), _norm_fact(val)
+        if old_v != new_v:
+            changes.append("%s: %s → %s" % (label, old_v or "unknown", new_v or "unknown"))
+
+    # Deal-memo list fields (compared as slug sets; order-insensitive).
+    for label, key, vals in (
+        ("lead investors", "lead_investors", new.lead_investors),
+        ("investors", "investors", new.investors),
+        ("notable customers", "notable_customers", new.notable_customers),
+        ("founders", "founders", new.founders),
+    ):
+        if {slugify(x) for x in prior.get(key, [])} != {slugify(x) for x in vals}:
+            changes.append("%s updated" % label)
+
     old_rel = {slugify(r) for r in prior.get("related_companies", [])}
     new_rel = {slugify(r) for r in new.related_companies}
     if old_rel != new_rel:
         changes.append("related companies updated")
 
     return changes
+
+
+def _norm_fact(text: Optional[str]) -> str:
+    """Normalize a fact for comparison; all 'unknown' spellings collapse to ''."""
+    v = _norm(text)
+    return "" if v in ("unknown", "undisclosed", "n/a", "none", "—", "-") else v
 
 
 def _norm(text: Optional[str]) -> str:

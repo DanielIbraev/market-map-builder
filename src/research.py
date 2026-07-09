@@ -23,7 +23,7 @@ import re
 import sys
 from typing import List, Optional
 
-from .models import FUNDING_STAGES, Company, SectorResearch
+from .models import FUNDING_STAGES, Company, SectorResearch, today_str
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -250,11 +250,19 @@ def _discover_and_research(client, sector: str, num_companies: int, printer: "_P
         "- one-line description\n- founding year (if known)\n"
         "- funding stage (pre-seed/seed/series A/B/C/growth/public/unknown)\n"
         "- total disclosed funding (e.g. \"$40M\", or \"undisclosed\")\n"
+        "- most recent funding round: stage, amount, and date (e.g. \"Series C · $150M · 2025-11\")\n"
+        "- lead investor(s) of that round, and other notable investors overall\n"
+        "- approximate headcount (and whether growing), HQ city/country\n"
+        "- business model / pricing in one line, and named notable customers\n"
+        "- founders (names only, from public company/press pages — no personal profiles)\n"
         "- key differentiator vs. competitors in the same space\n"
         "- target customer\n- which of the OTHER companies in this set are its most "
-        "direct competitors or adjacent players\n- source URLs you used.\n\n"
+        "direct competitors or adjacent players\n"
+        "- source URLs, and FOR EACH FACT note which URL supports it (funding, "
+        "headcount, round, investors, etc.).\n\n"
         "Write a concise dossier with one clearly-labelled section per company. "
-        "Only include companies you could actually verify — do not pad the list."
+        "Only include companies you could actually verify — do not pad the list, "
+        "and mark anything unverifiable as 'unknown' rather than estimating."
         % (sector, max(MIN_COMPANIES, num_companies - 2), num_companies + 2)
     )
     printer.info("  [dim]Discovering companies via web search…[/dim]")
@@ -278,10 +286,23 @@ def _extraction_schema() -> dict:
                         "founded_year": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
                         "funding_stage": {"type": "string", "enum": list(FUNDING_STAGES)},
                         "total_funding_disclosed": {"type": "string"},
+                        "last_round": {"type": "string"},
+                        "lead_investors": {"type": "array", "items": {"type": "string"}},
+                        "investors": {"type": "array", "items": {"type": "string"}},
+                        "headcount": {"type": "string"},
+                        "hq": {"type": "string"},
+                        "business_model": {"type": "string"},
+                        "notable_customers": {"type": "array", "items": {"type": "string"}},
+                        "founders": {"type": "array", "items": {"type": "string"}},
                         "key_differentiator": {"type": "string"},
                         "target_customer": {"type": "string"},
                         "related_companies": {"type": "array", "items": {"type": "string"}},
                         "source_urls": {"type": "array", "items": {"type": "string"}},
+                        "citations": {
+                            "type": "object",
+                            "description": "map of fact label (funding, round, headcount, investors, general, ...) to the single URL that supports it",
+                            "additionalProperties": {"type": "string"},
+                        },
                     },
                     "required": ["name"],
                 },
@@ -310,9 +331,12 @@ def _extract_structured(
         "From the research notes below about the \"%s\" sector, produce JSON of the "
         "form {\"companies\": [ ... ]} where each company has exactly these keys: "
         "name, one_line_description, founded_year, funding_stage, "
-        "total_funding_disclosed, key_differentiator, target_customer, "
-        "related_companies (names of other companies IN this list), source_urls.\n\n"
-        "funding_stage must be one of: %s.\n\n"
+        "total_funding_disclosed, last_round, lead_investors, investors, headcount, "
+        "hq, business_model, notable_customers, founders, key_differentiator, "
+        "target_customer, related_companies (names of other companies IN this list), "
+        "source_urls, citations (fact label -> supporting URL).\n\n"
+        "funding_stage must be one of: %s. Use \"\" / [] / null for anything the "
+        "notes don't verify — never invent values.\n\n"
         "JSON Schema (for shape reference):\n%s\n\n=== RESEARCH NOTES ===\n%s"
         % (sector, ", ".join(FUNDING_STAGES), json.dumps(schema), dossier)
     )
@@ -375,6 +399,10 @@ def _companies_from_raw(raw_list, printer: "_Printer") -> List[Company]:
         if company.slug in seen:
             continue  # never duplicate on slug
         seen.add(company.slug)
+        if not company.last_verified:
+            company.last_verified = today_str()  # facts confirmed as of this run
+        if not company.citations and company.source_urls:
+            company.citations = {"general": company.source_urls[0]}
         companies.append(company)
     return companies
 
@@ -478,6 +506,12 @@ def _mock_research(sector: str, num_companies: int) -> SectorResearch:
         companies = _generic_mock_companies(sector, num_companies)
 
     companies = companies[:num_companies]
+    stamp = today_str()
+    for c in companies:
+        if not c.last_verified:
+            c.last_verified = stamp
+        if not c.citations and c.source_urls:
+            c.citations = {"general": c.source_urls[0]}
     _prune_related(companies)
     return SectorResearch(sector_name=sector, companies=companies, source="mock")
 
@@ -534,10 +568,19 @@ _CURATED_MOCK = {
             "founded_year": 2022,
             "funding_stage": "growth",
             "total_funding_disclosed": "~$400M+ (reported)",
+            "last_round": "Series B · ~$105M · 2025-01 (illustrative)",
+            "lead_investors": ["Thrive Capital"],
+            "investors": ["Thrive Capital", "Andreessen Horowitz", "OpenAI Startup Fund"],
+            "headcount": "~100 (growing, reported)",
+            "hq": "San Francisco, US",
+            "business_model": "Freemium SaaS; Pro per-seat subscription.",
+            "notable_customers": ["Startups and engineering teams (self-serve)"],
+            "founders": ["Michael Truell", "Sualeh Asif", "Arvid Lunnemark", "Aman Sanger"],
             "key_differentiator": "Deep, whole-repo AI editing built directly into the IDE rather than bolted on as a plugin.",
             "target_customer": "Professional software engineers and engineering teams.",
             "related_companies": ["GitHub Copilot", "Windsurf", "Zed", "Augment Code"],
             "source_urls": ["https://cursor.com"],
+            "citations": {"general": "https://cursor.com", "funding": "https://cursor.com/blog"},
         },
         {
             "name": "GitHub Copilot",
@@ -545,10 +588,19 @@ _CURATED_MOCK = {
             "founded_year": 2021,
             "funding_stage": "public",
             "total_funding_disclosed": "undisclosed (Microsoft-owned)",
+            "last_round": "n/a (Microsoft product line)",
+            "lead_investors": [],
+            "investors": ["Microsoft (owner)"],
+            "headcount": "part of GitHub/Microsoft (undisclosed)",
+            "hq": "San Francisco, US (GitHub)",
+            "business_model": "Per-seat subscription; free for verified students/OSS.",
+            "notable_customers": ["Broad enterprise adoption via GitHub Enterprise"],
+            "founders": [],
             "key_differentiator": "Enormous distribution via GitHub and native Microsoft/VS Code integration.",
             "target_customer": "Individual developers through large enterprises.",
             "related_companies": ["Cursor", "Tabnine", "Windsurf", "Sourcegraph"],
             "source_urls": ["https://github.com/features/copilot"],
+            "citations": {"general": "https://github.com/features/copilot"},
         },
         {
             "name": "Windsurf",
@@ -556,10 +608,19 @@ _CURATED_MOCK = {
             "founded_year": 2021,
             "funding_stage": "growth",
             "total_funding_disclosed": "~$243M (reported)",
+            "last_round": "Series C · ~$150M · 2024-08 (illustrative)",
+            "lead_investors": ["General Catalyst"],
+            "investors": ["General Catalyst", "Kleiner Perkins", "Greenoaks"],
+            "headcount": "~200 (reported)",
+            "hq": "Mountain View, US",
+            "business_model": "Freemium; enterprise self-host licensing.",
+            "notable_customers": ["Security-conscious enterprises (self-host)"],
+            "founders": ["Varun Mohan", "Douglas Chen"],
             "key_differentiator": "Agent-first 'flows' that plan and execute across a codebase, plus an enterprise self-host story.",
             "target_customer": "Individual developers and security-conscious enterprises.",
             "related_companies": ["Cursor", "GitHub Copilot", "Tabnine"],
             "source_urls": ["https://windsurf.com"],
+            "citations": {"general": "https://windsurf.com", "funding": "https://windsurf.com/blog"},
         },
         {
             "name": "Tabnine",
@@ -567,10 +628,19 @@ _CURATED_MOCK = {
             "founded_year": 2018,
             "funding_stage": "series B",
             "total_funding_disclosed": "~$55M (reported)",
+            "last_round": "Series B · ~$25M · 2023-11 (illustrative)",
+            "lead_investors": ["Telstra Ventures"],
+            "investors": ["Telstra Ventures", "Atlassian Ventures", "Khosla Ventures"],
+            "headcount": "~60 (reported)",
+            "hq": "Tel Aviv, IL",
+            "business_model": "Per-seat SaaS; air-gapped enterprise deployments.",
+            "notable_customers": ["Regulated enterprises (finance, defense)"],
+            "founders": ["Dror Weiss", "Eran Yahav"],
             "key_differentiator": "Privacy-first / air-gapped deployments and control over which models and data are used.",
             "target_customer": "Enterprises with strict data-governance requirements.",
             "related_companies": ["GitHub Copilot", "Windsurf", "Sourcegraph"],
             "source_urls": ["https://www.tabnine.com"],
+            "citations": {"general": "https://www.tabnine.com"},
         },
         {
             "name": "Replit",
@@ -578,10 +648,19 @@ _CURATED_MOCK = {
             "founded_year": 2016,
             "funding_stage": "series B",
             "total_funding_disclosed": "~$220M (reported)",
+            "last_round": "Series B ext. · ~$97M · 2023-04 (illustrative)",
+            "lead_investors": ["Andreessen Horowitz"],
+            "investors": ["Andreessen Horowitz", "Khosla Ventures", "Coatue", "Y Combinator"],
+            "headcount": "~150 (reported)",
+            "hq": "Foster City, US",
+            "business_model": "Freemium cloud IDE; usage-based AI credits.",
+            "notable_customers": ["Education programs, indie builders"],
+            "founders": ["Amjad Masad", "Haya Odeh", "Faris Masad"],
             "key_differentiator": "Zero-setup cloud IDE + agent that goes from prompt to deployed app in one place.",
             "target_customer": "Learners, hobbyists, and prototyping teams.",
             "related_companies": ["Cursor", "GitHub Copilot", "Cognition (Devin)"],
             "source_urls": ["https://replit.com"],
+            "citations": {"general": "https://replit.com", "funding": "https://blog.replit.com"},
         },
         {
             "name": "Sourcegraph",
@@ -589,10 +668,19 @@ _CURATED_MOCK = {
             "founded_year": 2013,
             "funding_stage": "growth",
             "total_funding_disclosed": "~$225M (reported)",
+            "last_round": "Series D · ~$125M · 2021-07 (illustrative)",
+            "lead_investors": ["Andreessen Horowitz"],
+            "investors": ["Andreessen Horowitz", "Sequoia", "Insight Partners"],
+            "headcount": "~200 (reported)",
+            "hq": "San Francisco, US (remote-first)",
+            "business_model": "Enterprise licensing per active user.",
+            "notable_customers": ["Large enterprises with monorepos"],
+            "founders": ["Quinn Slack", "Beyang Liu"],
             "key_differentiator": "Deep code search / graph over huge monorepos powering more grounded AI answers.",
             "target_customer": "Large engineering organizations with big codebases.",
             "related_companies": ["GitHub Copilot", "Tabnine", "Augment Code"],
             "source_urls": ["https://sourcegraph.com"],
+            "citations": {"general": "https://sourcegraph.com"},
         },
         {
             "name": "Augment Code",
@@ -600,10 +688,19 @@ _CURATED_MOCK = {
             "founded_year": 2022,
             "funding_stage": "series B",
             "total_funding_disclosed": "~$252M (reported)",
+            "last_round": "Series B · ~$227M · 2024-04 (illustrative)",
+            "lead_investors": ["Sutter Hill Ventures"],
+            "investors": ["Sutter Hill Ventures", "Index Ventures", "Lightspeed"],
+            "headcount": "~80 (reported)",
+            "hq": "Palo Alto, US",
+            "business_model": "Enterprise per-seat SaaS.",
+            "notable_customers": ["Enterprise engineering orgs"],
+            "founders": ["Igor Ostrovsky", "Guy Gur-Ari"],
             "key_differentiator": "Context engine optimized for very large repos and team-scale knowledge.",
             "target_customer": "Enterprise engineering teams.",
             "related_companies": ["Cursor", "Sourcegraph", "GitHub Copilot"],
             "source_urls": ["https://www.augmentcode.com"],
+            "citations": {"general": "https://www.augmentcode.com"},
         },
         {
             "name": "Cognition (Devin)",
@@ -611,10 +708,19 @@ _CURATED_MOCK = {
             "founded_year": 2023,
             "funding_stage": "growth",
             "total_funding_disclosed": "~$196M+ (reported)",
+            "last_round": "Series B · ~$175M · 2024-04 (illustrative)",
+            "lead_investors": ["Founders Fund"],
+            "investors": ["Founders Fund", "Khosla Ventures", "8VC"],
+            "headcount": "~50 (reported)",
+            "hq": "San Francisco, US",
+            "business_model": "Usage/seat pricing for Devin agents.",
+            "notable_customers": ["Teams delegating ticket-level work"],
+            "founders": ["Scott Wu", "Steven Hao", "Walden Yan"],
             "key_differentiator": "Fully autonomous agent framed as a teammate that owns tickets, not just autocomplete.",
             "target_customer": "Engineering teams delegating whole tasks.",
             "related_companies": ["Cursor", "Replit", "GitHub Copilot"],
             "source_urls": ["https://cognition.ai"],
+            "citations": {"general": "https://cognition.ai", "funding": "https://cognition.ai/blog"},
         },
         {
             "name": "Zed",
@@ -622,10 +728,19 @@ _CURATED_MOCK = {
             "founded_year": 2021,
             "funding_stage": "seed",
             "total_funding_disclosed": "unknown",
+            "last_round": "",
+            "lead_investors": [],
+            "investors": [],
+            "headcount": "small team (undisclosed)",
+            "hq": "US (remote)",
+            "business_model": "Open-core editor; paid collaboration features planned.",
+            "notable_customers": [],
+            "founders": ["Nathan Sobo", "Max Brunsfeld", "Antonio Scandurra"],
             "key_differentiator": "Native, GPU-accelerated speed and real-time collaboration with AI woven in.",
             "target_customer": "Performance-conscious professional developers.",
             "related_companies": ["Cursor", "GitHub Copilot"],
             "source_urls": ["https://zed.dev"],
+            "citations": {"general": "https://zed.dev"},
         },
         {
             "name": "Continue",
@@ -633,10 +748,19 @@ _CURATED_MOCK = {
             "founded_year": 2023,
             "funding_stage": "seed",
             "total_funding_disclosed": "undisclosed",
+            "last_round": "Seed · undisclosed · 2023 (illustrative)",
+            "lead_investors": [],
+            "investors": ["Y Combinator"],
+            "headcount": "small team (undisclosed)",
+            "hq": "San Francisco, US",
+            "business_model": "Open source; enterprise support/hub planned.",
+            "notable_customers": ["OSS community adoption"],
+            "founders": ["Ty Dunn", "Nate Sesti"],
             "key_differentiator": "Fully open-source and model-agnostic — bring your own model and customize deeply.",
             "target_customer": "Developers and teams wanting open, self-controlled tooling.",
             "related_companies": ["Cursor", "Tabnine", "Zed"],
             "source_urls": ["https://www.continue.dev"],
+            "citations": {"general": "https://www.continue.dev"},
         },
     ]
 }

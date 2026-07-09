@@ -19,7 +19,7 @@ import os
 import re
 from typing import Dict, List, Optional, Tuple
 
-from .models import Company, SectorResearch, slugify
+from .models import Company, SectorResearch, is_unknown, slugify
 from .research import generate_landscape_summary
 
 WIKILINK_RE = re.compile(r"\[\[([^\]\|]+)(?:\|[^\]]*)?\]\]")
@@ -34,11 +34,13 @@ def write_vault(
     vault_path: str = "./vault",
     summary: Optional[str] = None,
     quiet: bool = False,
+    portfolio: Optional[set] = None,
 ) -> Dict[str, object]:
     """Write the full vault for `research`. Returns paths + a link-check result.
 
     `summary` lets a caller (e.g. refresh) pass a pre-computed landscape summary
     so we don't spend a second API call. If None, we generate one.
+    `portfolio` is an optional set of company slugs to star in the hub table.
     """
     sector_slug = research.sector_slug
     sector_dir = os.path.join(vault_path, sector_slug)
@@ -56,7 +58,7 @@ def write_vault(
     if summary is None:
         summary = generate_landscape_summary(research)
     hub_path = os.path.join(sector_dir, "_%s-map.md" % sector_slug)
-    _write_file(hub_path, _render_hub_note(research, summary))
+    _write_file(hub_path, _render_hub_note(research, summary, portfolio=portfolio))
 
     broken = verify_vault_links(sector_dir)
 
@@ -118,13 +120,16 @@ def write_company_note(
 
 
 def write_hub_note(
-    research: SectorResearch, vault_path: str, summary: Optional[str] = None
+    research: SectorResearch,
+    vault_path: str,
+    summary: Optional[str] = None,
+    portfolio: Optional[set] = None,
 ) -> str:
     os.makedirs(os.path.join(vault_path, research.sector_slug), exist_ok=True)
     if summary is None:
         summary = generate_landscape_summary(research)
     path = os.path.join(vault_path, research.sector_slug, "_%s-map.md" % research.sector_slug)
-    _write_file(path, _render_hub_note(research, summary))
+    _write_file(path, _render_hub_note(research, summary, portfolio=portfolio))
     return path
 
 
@@ -151,6 +156,16 @@ def parse_company_note(text: str) -> dict:
         "target_customer": "",
         "related_companies": [],
         "source_urls": [],
+        "last_round": "",
+        "lead_investors": [],
+        "investors": [],
+        "headcount": "",
+        "hq": "",
+        "business_model": "",
+        "notable_customers": [],
+        "founders": [],
+        "citations": {},
+        "last_verified": "",
         "changelog": [],
     }
 
@@ -169,6 +184,8 @@ def parse_company_note(text: str) -> dict:
                 out["funding_stage"] = val or "unknown"
             elif key == "founded":
                 out["founded_year"] = int(val) if val.isdigit() else None
+            elif key == "last_verified":
+                out["last_verified"] = "" if is_unknown(val) else val
 
     # Title (authoritative name if present)
     title = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
@@ -187,6 +204,26 @@ def parse_company_note(text: str) -> dict:
     if out["founded_year"] is None and founded_detail and founded_detail.isdigit():
         out["founded_year"] = int(founded_detail)
 
+    # Deal-memo detail bullets ("unknown" collapses back to empty).
+    def _scalar_detail(label):
+        v = _detail(details, label)
+        return "" if is_unknown(v) else v
+
+    def _list_detail(label):
+        v = _detail(details, label)
+        if is_unknown(v):
+            return []
+        return [p.strip() for p in v.split(";") if p.strip()]
+
+    out["last_round"] = _scalar_detail("Last round")
+    out["headcount"] = _scalar_detail("Headcount")
+    out["hq"] = _scalar_detail("HQ")
+    out["business_model"] = _scalar_detail("Business model")
+    out["lead_investors"] = _list_detail("Lead investors")
+    out["investors"] = _list_detail("Investors")
+    out["notable_customers"] = _list_detail("Notable customers")
+    out["founders"] = _list_detail("Founders")
+
     related_block = _section_between(text, "## Related companies", "##")
     for target, alias in re.findall(r"\[\[([^\]\|]+)(?:\|([^\]]*))?\]\]", related_block):
         out["related_companies"].append((alias or target).strip())
@@ -194,7 +231,12 @@ def parse_company_note(text: str) -> dict:
     sources_block = _section_between(text, "## Sources", "##")
     for line in sources_block.splitlines():
         line = line.strip()
-        if line.startswith("- ") and "http" in line:
+        if not line.startswith("- "):
+            continue
+        cited = re.match(r"-\s*\*\*(.+?)\*\*\s*—\s*(\S+)", line)
+        if cited:
+            out["citations"][cited.group(1).strip().lower()] = cited.group(2).strip()
+        elif "http" in line:
             out["source_urls"].append(line[2:].strip())
 
     out["changelog"] = extract_changelog(text)
@@ -213,6 +255,16 @@ def reconstruct_company(parsed: dict) -> Company:
         target_customer=parsed.get("target_customer", ""),
         related_companies=list(parsed.get("related_companies", [])),
         source_urls=list(parsed.get("source_urls", [])),
+        last_round=parsed.get("last_round", ""),
+        lead_investors=list(parsed.get("lead_investors", [])),
+        investors=list(parsed.get("investors", [])),
+        headcount=parsed.get("headcount", ""),
+        hq=parsed.get("hq", ""),
+        business_model=parsed.get("business_model", ""),
+        notable_customers=list(parsed.get("notable_customers", [])),
+        founders=list(parsed.get("founders", [])),
+        citations=dict(parsed.get("citations", {})),
+        last_verified=parsed.get("last_verified", ""),
     )
 
 
@@ -269,6 +321,7 @@ def _render_company_note(
         "sector: %s" % _yaml_scalar(research.sector_name),
         "funding_stage: %s" % _yaml_scalar(company.funding_stage),
         "founded: %s" % (company.founded_year if company.founded_year else "unknown"),
+        "last_verified: %s" % (company.last_verified or "unknown"),
         "tags: [company, %s]" % sector_slug,
         "---",
         "",
@@ -282,7 +335,15 @@ def _render_company_note(
         "## Details",
         "- **Founded:** %s" % founded,
         "- **Funding stage:** %s" % company.funding_stage,
+        "- **Last round:** %s" % _or_unknown(company.last_round),
+        "- **Lead investors:** %s" % _join_or_unknown(company.lead_investors),
         "- **Total disclosed funding:** %s" % (company.total_funding_disclosed or "undisclosed"),
+        "- **Investors:** %s" % _join_or_unknown(company.investors),
+        "- **Headcount:** %s" % _or_unknown(company.headcount),
+        "- **HQ:** %s" % _or_unknown(company.hq),
+        "- **Business model:** %s" % _or_unknown(company.business_model),
+        "- **Notable customers:** %s" % _join_or_unknown(company.notable_customers),
+        "- **Founders:** %s" % _join_or_unknown(company.founders),
         "- **Target customer:** %s" % (company.target_customer or "unknown"),
         "",
         "## What makes them different",
@@ -297,11 +358,18 @@ def _render_company_note(
         body.append("_No direct competitors identified in this map._")
 
     body += ["", "## Sources"]
-    if company.source_urls:
-        for url in company.source_urls:
+    cited_urls = set()
+    for label in sorted(company.citations):
+        url = company.citations[label]
+        body.append("- **%s** — %s" % (label.strip().lower(), url))
+        cited_urls.add(url)
+    for url in company.source_urls:
+        if url not in cited_urls:
             body.append("- %s" % url)
-    else:
+    if not company.citations and not company.source_urls:
         body.append("_No sources recorded._")
+    if company.last_verified:
+        body += ["", "_Facts verified as of %s._" % company.last_verified]
 
     if research.source == "mock":
         body += ["", "---", "> ⚠️ **Sample data** (offline mock mode) — illustrative only, verify before citing."]
@@ -315,10 +383,13 @@ def _render_company_note(
     return "\n".join(fm) + "\n".join(body)
 
 
-def _render_hub_note(research: SectorResearch, summary: str) -> str:
+def _render_hub_note(
+    research: SectorResearch, summary: str, portfolio: Optional[set] = None
+) -> str:
     sector = research.sector_name
     sector_slug = research.sector_slug
     companies = research.companies
+    portfolio = portfolio or set()
 
     lines = [
         "---",
@@ -343,17 +414,24 @@ def _render_hub_note(research: SectorResearch, summary: str) -> str:
     lines += [
         "## Companies",
         "",
-        "| Company | Stage | Founded | One-liner |",
-        "| --- | --- | --- | --- |",
+        "| Company | Stage | Founded | Last round | One-liner | Verified |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     for c in companies:
         founded = str(c.founded_year) if c.founded_year else "—"
         oneliner = _table_cell(c.one_line_description)
+        star = "★ " if c.slug in portfolio else ""
+        link = "[[%s|%s%s]]" % (c.slug, star, c.name)
+        last_round = _table_cell(c.last_round) if not is_unknown(c.last_round) else "—"
+        verified = c.last_verified or "—"
         lines.append(
-            "| %s | %s | %s | %s |" % (_wikilink(c.name), c.funding_stage, founded, oneliner)
+            "| %s | %s | %s | %s | %s | %s |"
+            % (link, c.funding_stage, founded, last_round, oneliner, verified)
         )
     if not companies:
-        lines.append("| _none found_ | | | |")
+        lines.append("| _none found_ | | | | | |")
+    if portfolio:
+        lines += ["", "_★ = portfolio company (from the watchlist)._"]
 
     # --- landscape summary -------------------------------------------------
     lines += ["", "## Landscape summary", "", summary.strip() or "_Not available._", ""]
@@ -410,6 +488,16 @@ def _mermaid_id(slug: str) -> str:
 def _mermaid_label(name: str) -> str:
     # Quotes inside a "..." label break Mermaid; swap for a safe char.
     return name.replace('"', "'").replace("[", "(").replace("]", ")")
+
+
+def _or_unknown(value: str) -> str:
+    return value.strip() if value and value.strip() else "unknown"
+
+
+def _join_or_unknown(items: List[str]) -> str:
+    # ';' separator: entries themselves may contain commas ("finance, defense").
+    items = [i.strip() for i in (items or []) if i and i.strip()]
+    return "; ".join(items) if items else "unknown"
 
 
 def _table_cell(text: str) -> str:
