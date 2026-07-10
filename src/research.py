@@ -472,6 +472,62 @@ def generate_landscape_summary(research: SectorResearch, mock: bool = False) -> 
     return text or _mock_landscape_summary(research)
 
 
+def generate_memo_body(sector: str, target: dict, rivals: list, summary: str) -> str:
+    """Live first-draft deal memo, grounded ONLY in the vault data provided.
+
+    Raises RuntimeError when no key/SDK is available (caller falls back to the
+    offline template). All API access stays in this module by design.
+    """
+    client = _get_client()
+
+    def brief(r):
+        return (
+            "- %s | stage: %s | founded: %s | last round: %s | total: %s | "
+            "differentiator: %s | target: %s"
+            % (r.get("name"), r.get("funding_stage"), r.get("founded_year"),
+               r.get("last_round") or "unknown",
+               r.get("total_funding_disclosed") or "undisclosed",
+               r.get("key_differentiator") or "?", r.get("target_customer") or "?")
+        )
+
+    cites = "\n".join("  - %s: %s" % (k, v) for k, v in (target.get("citations") or {}).items())
+    context = (
+        "SECTOR: %s\n\nLANDSCAPE SUMMARY:\n%s\n\nTARGET COMPANY (all known facts):\n%s\n"
+        "CITATIONS:\n%s\n\nRIVALS IN THE MAP:\n%s"
+        % (
+            sector,
+            summary or "(none)",
+            json.dumps({k: v for k, v in target.items() if k not in ("changelog",)},
+                       ensure_ascii=False, indent=2),
+            cites or "  (none)",
+            "\n".join(brief(r) for r in rivals) or "(none identified)",
+        )
+    )
+
+    resp = client.messages.create(
+        model=MODEL,
+        max_tokens=3000,
+        system=(
+            "You are a VC associate drafting a FIRST-PASS deal memo from research "
+            "notes. Ground every claim strictly in the provided data — never invent "
+            "figures, customers, or metrics. Where data is missing, write an explicit "
+            "open diligence question instead. Output clean markdown with sections: "
+            "# Deal memo (draft): <name>, ## Snapshot, ## Market context, "
+            "## Competitive positioning (compare against the rivals provided), "
+            "## Customer & go-to-market, ## Risks, ## Open questions for diligence "
+            "(checkbox list), ## Sources (repeat the citations). Cite the source "
+            "label next to load-bearing figures, e.g. '(source: funding)'."
+        ),
+        messages=[{"role": "user", "content": context}],
+    )
+    text = "".join(
+        block.text for block in resp.content if getattr(block, "type", None) == "text"
+    ).strip()
+    if not text:
+        raise RuntimeError("Memo generation returned no text.")
+    return text
+
+
 def _mock_landscape_summary(research: SectorResearch) -> str:
     companies = research.companies
     if not companies:

@@ -75,6 +75,18 @@ verify as `unknown` rather than guessing.
 - 🧭 **Hub note per sector** — table, landscape summary, and Mermaid graph.
 - ♻️ **Refresh mode** — re-run a sector; changed notes get a `## Changelog` entry,
   new companies get added, nothing is duplicated.
+- 🧾 **Deal-memo depth** — last round, lead investors, headcount, HQ, business
+  model, customers, founders (public info only) on every note.
+- 📎 **Per-fact provenance** — each figure cites its source URL, and every note
+  carries a `last_verified` date surfaced in the hub table.
+- 📰 **Change digests** — `digest` / `watchlist run` turn refreshes into a
+  "what moved this week" note, cron-friendly, with optional Slack delivery.
+- 📤 **Exports** — one command to CSV (Airtable/Sheets-ready) or JSON, straight
+  from the vault, offline.
+- 📝 **Draft deal memos** — `memo` writes a grounded first-pass memo where every
+  unknown becomes an explicit diligence question, never invented filler.
+- ⭐ **Watchlist + portfolio overlay** — track sectors, star your portfolio
+  companies in every map, and ask "who's encroaching on X?"
 - 🆓 **Free offline mode** — `--mock` builds a full vault with sample data (no key,
   no cost) so you can try the whole pipeline instantly.
 - 🔒 **Secure by design** — the API key lives only in `src/research.py`, read from
@@ -121,6 +133,38 @@ python -m src.main refresh "AI code review tools"
 
 Open the resulting `vault/<sector>/` folder in Obsidian and switch to **graph
 view** to explore the landscape.
+
+### The associate workflow
+
+```bash
+# "What moved this week?" — refresh + a digest note (optionally to Slack)
+python -m src.main digest "AI code review tools"
+python -m src.main digest "AI code review tools" --webhook https://hooks.slack.com/...
+
+# Export the map to CSV (Airtable / Sheets) or JSON — offline, no API
+python -m src.main export "AI code review tools"            # CSV
+python -m src.main export "AI code review tools" -f json
+
+# Draft a first-pass deal memo, grounded in the vault notes
+python -m src.main memo "AI code review tools" "SomeCo"      # live (needs key)
+python -m src.main memo "AI code review tools" "SomeCo" --mock  # offline template
+
+# Track sectors + portfolio, refresh everything in one pass
+python -m src.main watchlist add "AI code review tools"
+python -m src.main portfolio add "SomeCo"        # ★-starred in every hub table
+python -m src.main watchlist run                 # refresh + combined digest
+python -m src.main overlay                       # where does each portfolio co. sit?
+```
+
+**Weekly monitor via cron** (Monday 8am, digest to Slack):
+
+```cron
+0 8 * * 1  cd /path/to/market-map-builder && ./.venv/bin/python -m src.main watchlist run --quiet --webhook "$MARKET_MAP_WEBHOOK"
+```
+
+The webhook URL can live in the environment (`MARKET_MAP_WEBHOOK`) instead of
+the crontab line. Digests land in the vault too (`_digest-YYYY-MM-DD.md`), so
+the history stays browsable in Obsidian.
 
 ### Invoke as a Claude Code skill
 
@@ -202,6 +246,7 @@ Offline, no key required:
 ```bash
 python -m tests.test_vault_links     # every [[wikilink]] resolves to a note
 python -m tests.test_refresh         # diff / changelog / add / idempotency
+python -m tests.test_features        # provenance, digest, export, memo, watchlist
 # or, with pytest installed:  pytest -q
 ```
 
@@ -216,7 +261,11 @@ python -m tests.test_refresh         # diff / changelog / add / idempotency
 │   ├── research.py      # Claude + web search — the ONLY module with the key
 │   ├── vault_writer.py  # markdown notes + wikilinks + hub + graph
 │   ├── models.py        # Pydantic models + slugify + validation
-│   └── refresh.py       # diff an existing sector, append changelogs
+│   ├── refresh.py       # diff an existing sector, append changelogs
+│   ├── digest.py        # "what moved" digests (+ webhook delivery)
+│   ├── export.py        # CSV / JSON exports straight from the vault
+│   ├── memo.py          # grounded first-draft deal memos
+│   └── watchlist.py     # tracked sectors, portfolio ★, overlay reports
 ├── tests/               # offline link-integrity + refresh tests
 ├── vault/               # generated vaults (example committed)
 ├── .claude/skills/market-map/SKILL.md

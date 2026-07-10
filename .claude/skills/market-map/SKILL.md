@@ -40,6 +40,15 @@ python -m src.main map "<sector>" --mock
 
 # Update an existing map (diffs + appends a changelog to changed notes):
 python -m src.main refresh "<sector>"
+
+# Associate workflow (use these when the request matches):
+python -m src.main digest "<sector>"              # "what changed in X?"
+python -m src.main export "<sector>"              # "give me a CSV/spreadsheet"
+python -m src.main memo "<sector>" "<company>"    # "draft a memo on Y"
+python -m src.main watchlist add "<sector>"       # "track X"
+python -m src.main portfolio add "<company>"      # "watch our company Y"
+python -m src.main watchlist run                  # "refresh everything"
+python -m src.main overlay "<company>"            # "who's encroaching on Y?"
 ```
 
 Steps for the assistant:
