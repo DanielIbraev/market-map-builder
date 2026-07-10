@@ -140,6 +140,31 @@ def test_memo_unknown_company_errors():
             assert "not in the" in str(exc)
 
 
+# --- static site builder ------------------------------------------------------
+
+def test_site_builder_outputs_catalog_and_sector_json():
+    from src.site_builder import build_site
+    with tempfile.TemporaryDirectory() as vault, tempfile.TemporaryDirectory() as site:
+        _build(vault)
+        out = build_site(vault_path=vault, site_dir=site, quiet=True)
+        assert "ai-coding-assistants" in out["sectors"]
+
+        with open(os.path.join(site, "data", "catalog.json"), encoding="utf-8") as fh:
+            cat = json.load(fh)
+        acs = [s for c in cat["categories"] for s in c["subsectors"]
+               if s["slug"] == "ai-coding-assistants"][0]
+        assert acs["mapped"] and acs["companies"] == 10
+        assert cat["stats"]["mapped"] == 1
+
+        with open(os.path.join(site, "data", "ai-coding-assistants.json"), encoding="utf-8") as fh:
+            data = json.load(fh)
+        cursor = next(c for c in data["companies"] if c["id"] == "cursor")
+        assert cursor["fM"] == 400.0                      # "$400M+" parsed
+        assert "github-copilot" in cursor["rel"]          # relations as slugs
+        assert cursor["lead"] == "Thrive Capital"
+        assert data["source"] == "mock" and data["summary"]
+
+
 # --- watchlist / portfolio overlay -------------------------------------------
 
 def test_watchlist_roundtrip_and_run():

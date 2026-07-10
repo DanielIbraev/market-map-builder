@@ -240,6 +240,27 @@ def memo(
     ])
 
 
+@app.command()
+def site(
+    vault_path: str = typer.Option(DEFAULT_VAULT, "--vault-path"),
+    out: str = typer.Option("docs/site", "--out", help="Static site directory."),
+) -> None:
+    """Build the deployable static atlas (data JSON + catalog) from the vault."""
+    from .site_builder import build_site
+
+    try:
+        result = build_site(vault_path=vault_path, site_dir=out, quiet=True)
+    except (ValueError, FileNotFoundError) as exc:
+        _err(str(exc))
+        raise typer.Exit(2)
+    _summary("Site built", [
+        "Sectors:    [bold]%d[/bold]" % len(result["sectors"]),
+        "Companies:  [bold]%d[/bold]" % result["companies"],
+        "Output:     %s" % result["site_dir"],
+        "[dim]Serve locally:  python -m http.server -d %s 8000[/dim]" % result["site_dir"],
+    ])
+
+
 # ---------------------------------------------------------------------------
 # Watchlist / portfolio / overlay
 # ---------------------------------------------------------------------------

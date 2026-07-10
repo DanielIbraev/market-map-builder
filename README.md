@@ -156,6 +156,33 @@ python -m src.main watchlist run                 # refresh + combined digest
 python -m src.main overlay                       # where does each portfolio co. sit?
 ```
 
+### The deployable Sector Atlas (multi-sector web app)
+
+```bash
+# 1. Map as many sectors as you want (mock or live)
+python -m src.main map "Vertical farming" --mock
+python -m src.main map "Cloud security"   --mock
+
+# 2. Build the static site (catalog of 76 sub-sectors + one JSON per mapped sector)
+python -m src.main site
+
+# 3. Preview locally, then deploy docs/site/ to any static host
+python -m http.server -d docs/site 8000     # -> http://localhost:8000
+```
+
+`docs/site/` is a **zero-backend static app**: a home page cataloging 13
+categories / 76 sub-sectors (mapped ones glow and open the interactive 3D map;
+unmapped ones tell you the CLI command to unlock them), plus `map.html` which
+renders any sector's JSON. Deploy by dragging `docs/site` onto
+[drop.netlify.com](https://drop.netlify.com), or enable GitHub Pages on `/docs`.
+
+**Why this is the secure-and-free architecture:** research (and your API key)
+stays on your machine; the deployed site is pure files with a locked-down CSP,
+no runtime API calls, no database, and no credentials — there is nothing to
+hack and nothing to steal. Quality startup-data APIs (PitchBook, Crunchbase)
+are paid/enterprise, so the free path is this tool's own research engine
+feeding pre-generated JSON.
+
 **Weekly monitor via cron** (Monday 8am, digest to Slack):
 
 ```cron

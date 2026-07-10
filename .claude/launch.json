@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "atlas",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd '/Users/chyngyzoskonbaev/Desktop/Claude Code/Market Mapper (VC Project)/docs/site' && exec python3 -m http.server 8741"],
+      "port": 8741
+    }
+  ]
+}
