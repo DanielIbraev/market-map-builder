@@ -20,6 +20,7 @@ import re
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
+from .enrich import build_intel
 from .export import load_sector_rows
 from .memo import _hub_summary  # reuse the hub-summary extractor
 from .models import slugify
@@ -56,6 +57,61 @@ def build_site(vault_path: str = "./vault", site_dir: str = DEFAULT_SITE_DIR,
     catalog = _catalog(mapped)
     ticker.sort(key=lambda t: t["n"])
     catalog["ticker"] = ticker[::2][:28] if len(ticker) > 28 else ticker
+
+    # ---- analyst aggregates: screener index, feed, trending, brief --------
+    allco: List[dict] = []
+    for slug in built:
+        with open(os.path.join(data_dir, "%s.json" % slug), encoding="utf-8") as fh:
+            payload = json.load(fh)
+        for co in payload["companies"]:
+            i = co["intel"]
+            allco.append({
+                "id": co["id"], "n": co["name"], "sec": slug, "secn": payload["sector"],
+                "st": co["stage"], "f": co.get("founded"), "fM": co.get("fM"),
+                "rd": co.get("round", ""), "lead": co.get("lead", ""), "hc": co.get("hc", ""),
+                "hq": co.get("hq", ""), "ctry": i["country"], "tags": i["tags"],
+                "links": len(co.get("rel") or []), "flags": len(i["flags"]),
+                "chg": len(i["changes"]), "cur": i["curated"],
+                "arr": i["metrics"]["arr"], "gr": i["metrics"]["growth"],
+            })
+    with open(os.path.join(data_dir, "companies.json"), "w", encoding="utf-8") as fh:
+        json.dump(allco, fh, ensure_ascii=False)
+
+    feed = []
+    for slug in built:
+        with open(os.path.join(data_dir, "%s.json" % slug), encoding="utf-8") as fh:
+            payload = json.load(fh)
+        for co in payload["companies"]:
+            for ch in co["intel"]["changes"]:
+                feed.append({"n": co["name"], "id": co["id"], "s": slug,
+                             "t": ch["type"], "x": ch["text"]})
+    order = {"funding": 0, "ipo": 0, "ma": 1, "acquisition": 1, "distress": 2,
+             "exec": 3, "hiring": 4, "regulatory": 5}
+    feed.sort(key=lambda f: (order.get(f["t"], 6), f["n"]))
+    catalog["feed"] = feed[:40]
+
+    top_funding = sorted([c for c in allco if c["fM"]], key=lambda c: -c["fM"])[:6]
+    recent = sorted([c for c in allco if re.search(r"202[4-6]", c["rd"] or "")],
+                    key=lambda c: c["rd"], reverse=True)[:6]
+    contested = sorted(allco, key=lambda c: -c["links"])[:6]
+    flagged = sorted([c for c in allco if c["flags"]], key=lambda c: -c["flags"])[:6]
+    trend = lambda c: {"n": c["n"], "id": c["id"], "s": c["sec"], "st": c["st"],
+                       "v": c["fM"], "rd": c["rd"], "links": c["links"], "flags": c["flags"]}
+    catalog["trending"] = {"funding": [trend(c) for c in top_funding],
+                           "recent": [trend(c) for c in recent],
+                           "contested": [trend(c) for c in contested],
+                           "flagged": [trend(c) for c in flagged]}
+    kinds = [f["t"] for f in feed]
+    catalog["brief"] = {
+        "rounds": kinds.count("funding") + kinds.count("ipo"),
+        "ma": kinds.count("ma") + kinds.count("acquisition"),
+        "exec": kinds.count("exec"),
+        "distress": kinds.count("distress"),
+        "regulatory": kinds.count("regulatory"),
+        "hiring": kinds.count("hiring"),
+    }
+    catalog["reports"] = [{"n": c["n"], "id": c["id"], "s": c["sec"], "secn": c["secn"]}
+                          for c in allco if c["cur"]][:12]
     with open(os.path.join(data_dir, "catalog.json"), "w", encoding="utf-8") as fh:
         json.dump(catalog, fh, ensure_ascii=False)
 
@@ -139,12 +195,19 @@ def _sector_payload(sector_name: str, vault_path: str) -> Optional[dict]:
             "src": src or "",
             "verified": r.get("last_verified") or "",
         })
+    # Analyst-intel layer (memo, bull/bear, flags, SWOT, hiring, timeline…)
+    summary = _hub_summary(sector_name, vault_path)
+    by_id = {co["id"]: co for co in companies}
+    for co in companies:
+        rivals = [by_id[r] for r in co["rel"] if r in by_id]
+        co["intel"] = build_intel(co, slug, sector_name, len(co["rel"]), rivals, summary)
+
     return {
         "sector": sector_name,
         "slug": slug,
         "source": source,
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-        "summary": _hub_summary(sector_name, vault_path),
+        "summary": summary,
         "companies": companies,
     }
 

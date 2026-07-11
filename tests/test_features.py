@@ -224,6 +224,56 @@ def test_overlay_absent_company():
         assert "does not appear" in render_overlay(report)
 
 
+# --- analyst intel layer (site build) ----------------------------------------
+
+def test_enrich_generates_grounded_intel():
+    from src.enrich import build_intel
+    with tempfile.TemporaryDirectory() as vault:
+        _build(vault)
+        from src.export import load_sector_rows
+        rows = load_sector_rows(SECTOR, vault_path=vault)
+        cursor = next(r for r in rows if r["slug"] == "cursor")
+        co = {"id": "cursor", "name": cursor["name"], "stage": cursor["funding_stage"],
+              "founded": cursor["founded_year"], "funding": cursor["total_funding_disclosed"],
+              "fM": 400, "round": cursor["last_round"], "lead": "Thrive Capital",
+              "inv": "; ".join(cursor["investors"]), "hc": cursor["headcount"],
+              "hq": cursor["hq"], "bm": cursor["business_model"],
+              "fnd": "; ".join(cursor["founders"]), "target": cursor["target_customer"],
+              "desc": cursor["one_line_description"], "diff": cursor["key_differentiator"],
+              "rel": ["github-copilot", "windsurf"]}
+        rivals = [{"name": "GitHub Copilot", "stage": "public"}]
+        intel = build_intel(co, "ai-coding-assistants", SECTOR, 4, rivals, "summary text")
+        for key in ("memo", "bull", "bear", "flags", "swot", "hiring", "founders",
+                    "timeline", "changes", "tags", "metrics"):
+            assert key in intel, key
+        assert 3 <= len(intel["memo"]["thesis"]) <= 6
+        assert 3 <= len(intel["memo"]["questions"]) <= 5
+        assert intel["bull"] and intel["bear"]
+        assert intel["curated"] is True          # Cursor has deep intel
+        assert any("incumbent" in f.lower() or "public" in f.lower() for f in intel["flags"])
+        assert all(k in intel["swot"] for k in ("s", "w", "o", "t"))
+
+
+def test_site_build_emits_intel_and_aggregates():
+    import json as _json
+    from src.site_builder import build_site
+    with tempfile.TemporaryDirectory() as vault:
+        _build(vault)
+        with tempfile.TemporaryDirectory() as site:
+            build_site(vault_path=vault, site_dir=site, quiet=True)
+            with open(os.path.join(site, "data", "ai-coding-assistants.json")) as fh:
+                payload = _json.load(fh)
+            assert all("intel" in c for c in payload["companies"])
+            with open(os.path.join(site, "data", "companies.json")) as fh:
+                allco = _json.load(fh)
+            assert len(allco) == len(payload["companies"])
+            assert {"n", "st", "fM", "tags", "flags"} <= set(allco[0].keys())
+            with open(os.path.join(site, "data", "catalog.json")) as fh:
+                cat = _json.load(fh)
+            for key in ("feed", "trending", "brief", "reports"):
+                assert key in cat, key
+
+
 def _run_all():
     passed = 0
     for name, fn in sorted(globals().items()):

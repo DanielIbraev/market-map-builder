@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Screener — Sector Atlas</title>
+<meta name="theme-color" content="#060409">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>">
+<style>
+  :root{
+    --bg:#060409; --ink:#ece7f6; --dim:#a79dc4; --faint:#5f5680;
+    --hair:rgba(210,195,255,.09); --hair-2:rgba(210,195,255,.18);
+    --panel:rgba(255,255,255,.018); --panel-2:#0b0812;
+    --violet:#8b7cf6; --violet-2:#a78bfa; --lav:#c4b5fd; --gold:#fcd34d; --red:#fb7185;
+    --mono:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scrollbar-color:#2a2144 var(--bg)}
+  body{margin:0;color:var(--ink);font-family:var(--sans);line-height:1.5;
+    background:radial-gradient(1300px 800px at 50% -15%, rgba(112,90,220,.09), transparent 60%),var(--bg);
+    -webkit-font-smoothing:antialiased}
+  ::selection{background:rgba(139,124,246,.35)}
+  .wrap{max-width:1280px;margin:0 auto;padding:26px 24px 130px}
+  .nav{display:flex;gap:20px;align-items:center;margin-bottom:20px}
+  .back{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);text-decoration:none}
+  .back:hover{color:var(--lav)}
+  h1{margin:0 0 6px;font-size:clamp(26px,3.6vw,40px);font-weight:650;letter-spacing:-.025em}
+  h1 span{color:var(--lav)}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 20px}
+
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;position:sticky;top:0;z-index:5;
+    padding:12px 0;background:linear-gradient(180deg,var(--bg) 82%,transparent)}
+  .filters input[type=text]{font-family:var(--mono);font-size:12px;color:var(--ink);background:rgba(18,12,32,.92);
+    border:1px solid var(--hair-2);padding:9px 15px;border-radius:999px;outline:none;min-width:190px}
+  .filters input[type=text]:focus{border-color:rgba(167,139,250,.6)}
+  select,.numin{font-family:var(--mono);font-size:11px;color:var(--dim);background:rgba(18,12,32,.92);
+    border:1px solid var(--hair);padding:9px 12px;border-radius:999px;outline:none;cursor:pointer}
+  select:focus,.numin:focus{border-color:rgba(167,139,250,.5)}
+  .numin{width:120px;cursor:text}
+  .count{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-left:auto}
+
+  .tablewrap{border:1px solid var(--hair);border-radius:10px;overflow:auto;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;min-width:1080px}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--hair);font-size:12.5px;white-space:nowrap}
+  th{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);font-weight:500;
+    position:sticky;top:0;background:#0a0714;cursor:pointer;user-select:none}
+  th:hover{color:var(--lav)}
+  th .arr{color:var(--violet-2)}
+  tbody tr{transition:background .14s}
+  tbody tr:hover{background:rgba(139,124,246,.06)}
+  tbody tr:last-child td{border-bottom:none}
+  td.mono{font-family:var(--mono);font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+  td .nm{font-weight:600;color:var(--ink);text-decoration:none}
+  td .nm:hover{color:var(--lav)}
+  .st{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .st i{width:5px;height:5px;border-radius:50%}
+  .fl{color:var(--red);font-family:var(--mono);font-size:11px}
+  .tg{font-family:var(--mono);font-size:9px;color:var(--faint);border:1px solid var(--hair);border-radius:3px;padding:1px 5px;margin-right:3px}
+  .star{cursor:pointer;color:var(--faint);font-size:14px;background:none;border:none;padding:2px 4px}
+  .star.on{color:var(--gold)}
+  .cmp{cursor:pointer}
+
+  .cbar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(90px);z-index:20;
+    display:flex;gap:14px;align-items:center;background:#17102a;border:1px solid rgba(167,139,250,.5);
+    border-radius:999px;padding:10px 12px 10px 22px;box-shadow:0 18px 60px rgba(0,0,0,.6), 0 0 40px rgba(109,61,240,.25);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .cbar.show{transform:translateX(-50%) translateY(0)}
+  .cbar .t{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.08em}
+  .cbar .t b{color:var(--ink)}
+  .cbar button{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;
+    color:#fff;background:linear-gradient(90deg,#6d5ae0,#8b7cf6);border:none;padding:9px 20px;border-radius:999px}
+  .cbar .clr{background:none;color:var(--faint);padding:9px 8px}
+
+  .overlay{position:fixed;inset:0;z-index:30;background:rgba(4,2,8,.82);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:40px 20px}
+  .overlay.show{display:flex}
+  .cwin{background:#0b0812;border:1px solid var(--hair-2);border-radius:14px;max-width:1200px;width:100%;
+    box-shadow:0 30px 100px rgba(0,0,0,.7);animation:pop .35s cubic-bezier(.2,.8,.2,1)}
+  @keyframes pop{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+  .cwin .head{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--hair)}
+  .cwin .head h2{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);margin:0}
+  .cwin .head button{background:none;border:1px solid var(--hair-2);color:var(--dim);border-radius:999px;padding:6px 14px;cursor:pointer;font-family:var(--mono);font-size:10px}
+  .cbody{overflow:auto;padding:6px 0 14px}
+  .ctable{border-collapse:collapse;width:100%;min-width:760px}
+  .ctable th,.ctable td{padding:10px 18px;border-bottom:1px solid var(--hair);font-size:12.5px;vertical-align:top;text-align:left}
+  .ctable th{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);font-weight:500;white-space:nowrap;width:150px}
+  .ctable td{min-width:170px;max-width:240px}
+  .ctable tr:first-child td{font-weight:650;font-size:14px}
+  .ctable td .sm{font-size:11.5px;color:var(--dim)}
+  .ctable a{color:var(--violet-2);text-decoration:none;font-family:var(--mono);font-size:10.5px}
+  #none{display:none;text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--faint);padding:40px 0;letter-spacing:.1em}
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.001s!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav">
+    <a class="back" href="./index.html">← Atlas</a>
+    <span style="flex:1"></span>
+    <a class="back" href="./index.html#cats">Sectors</a>
+  </div>
+  <h1>Company <span>screener</span></h1>
+  <p class="sub">Filter every tracked company across all mapped sectors · star to watchlist · select up to five to compare.</p>
+
+  <div class="filters">
+    <input type="text" id="q" placeholder="▸ Search companies…" autocomplete="off">
+    <select id="fSec"><option value="">All sectors</option></select>
+    <select id="fStage"><option value="">All stages</option></select>
+    <select id="fCtry"><option value="">All countries</option></select>
+    <select id="fTag"><option value="">All models</option>
+      <option>B2B</option><option>B2C</option><option>AI</option><option>Hardware</option><option>Recurring</option></select>
+    <input type="number" class="numin" id="fMin" placeholder="Min $M raised" min="0">
+    <select id="fSort">
+      <option value="fM">Sort: funding</option><option value="n">Sort: name</option>
+      <option value="f">Sort: founded</option><option value="links">Sort: links</option>
+      <option value="flags">Sort: red flags</option><option value="chg">Sort: activity</option>
+    </select>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th></th><th></th><th data-k="n">Company</th><th data-k="sec">Sector</th><th data-k="st">Stage</th>
+        <th data-k="f">Founded</th><th data-k="ctry">HQ</th><th data-k="fM">Raised</th>
+        <th data-k="rd">Last round</th><th data-k="links">Links</th><th data-k="flags">Flags</th><th>Model</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="none">No companies match these filters.</div>
+  </div>
+</div>
+
+<div class="cbar" id="cbar">
+  <span class="t">Compare <b id="cn">0</b>/5</span>
+  <button id="cgo">Compare →</button>
+  <button class="clr" id="cclear">clear</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="cwin">
+    <div class="head"><h2>Comparison</h2><button id="cclose">✕ close</button></div>
+    <div class="cbody"><table class="ctable" id="ctable"></table></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const STAGE_C={"pre-seed":"#5eead4","seed":"#7dd3fc","series A":"#6ee7b7","series B":"#a78bfa","series C":"#c084fc",
+  "growth":"#e0aaff","public":"#fcd34d","acquired":"#fda4af","bootstrapped":"#a3e635","unknown":"#9b8fc0"};
+const WKEY="atlas_watch";
+const watch=()=>{try{return JSON.parse(localStorage.getItem(WKEY)||"[]");}catch(_){return[];}};
+const setWatch=w=>{try{localStorage.setItem(WKEY,JSON.stringify(w));}catch(_){}};
+
+let ALL=[],sel=[];  // sel: "sec|id"
+fetch("data/companies.json").then(r=>r.json()).then(d=>{ALL=d;init();})
+  .catch(()=>{document.getElementById("count").textContent="build the site first (python -m src.main site)";});
+
+const money=v=>v==null?"—":(v>=1000?"$"+(v/1000).toFixed(1)+"B":"$"+Math.round(v)+"M");
+
+function init(){
+  const secs=[...new Set(ALL.map(c=>c.secn))].sort();
+  const stages=[...new Set(ALL.map(c=>c.st))].sort();
+  const ctrys=[...new Set(ALL.map(c=>c.ctry))].sort();
+  const opt=(el,vals)=>vals.forEach(v=>{const o=document.createElement("option");o.textContent=v;el.appendChild(o);});
+  opt(document.getElementById("fSec"),secs);
+  opt(document.getElementById("fStage"),stages);
+  opt(document.getElementById("fCtry"),ctrys);
+  ["q","fSec","fStage","fCtry","fTag","fMin","fSort"].forEach(id=>
+    document.getElementById(id).addEventListener("input",renderRows));
+  document.querySelectorAll("th[data-k]").forEach(th=>th.addEventListener("click",()=>{
+    document.getElementById("fSort").value=th.dataset.k in {n:1,f:1,fM:1,links:1,flags:1}?th.dataset.k:"fM";renderRows();}));
+  document.getElementById("cgo").addEventListener("click",openCompare);
+  document.getElementById("cclear").addEventListener("click",()=>{sel=[];renderRows();syncBar();});
+  document.getElementById("cclose").addEventListener("click",()=>document.getElementById("overlay").classList.remove("show"));
+  document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")e.target.classList.remove("show");});
+  renderRows();
+}
+
+function filtered(){
+  const q=document.getElementById("q").value.trim().toLowerCase();
+  const sec=document.getElementById("fSec").value, st=document.getElementById("fStage").value;
+  const ct=document.getElementById("fCtry").value, tg=document.getElementById("fTag").value;
+  const min=parseFloat(document.getElementById("fMin").value)||0;
+  const k=document.getElementById("fSort").value;
+  let rows=ALL.filter(c=>
+    (!q||c.n.toLowerCase().includes(q))&&(!sec||c.secn===sec)&&(!st||c.st===st)&&
+    (!ct||c.ctry===ct)&&(!tg||c.tags.includes(tg))&&((c.fM||0)>=min));
+  rows.sort((a,b)=>k==="n"?a.n.localeCompare(b.n):k==="rd"?String(b.rd).localeCompare(String(a.rd)):((b[k]||0)-(a[k]||0)));
+  return rows;
+}
+
+function renderRows(){
+  const rows=filtered(),tb=document.getElementById("tbody"),w=watch();
+  tb.innerHTML=rows.map(c=>{
+    const key=c.sec+"|"+c.id, starred=w.some(x=>x.startsWith(key));
+    return "<tr>"+
+      '<td><input class="cmp" type="checkbox" data-key="'+esc(key)+'"'+(sel.includes(key)?" checked":"")+"></td>"+
+      '<td><button class="star'+(starred?" on":"")+'" data-w="'+esc(key)+'|'+esc(c.n)+'">'+(starred?"★":"☆")+"</button></td>"+
+      '<td><a class="nm" href="company.html?sector='+encodeURIComponent(c.sec)+"&id="+encodeURIComponent(c.id)+'">'+esc(c.n)+"</a></td>"+
+      '<td class="mono">'+esc(c.secn)+"</td>"+
+      '<td><span class="st"><i style="background:'+(STAGE_C[c.st]||STAGE_C.unknown)+'"></i>'+esc(c.st)+"</span></td>"+
+      '<td class="mono">'+(c.f||"—")+"</td>"+
+      '<td class="mono">'+esc(c.ctry)+"</td>"+
+      '<td class="mono">'+money(c.fM)+"</td>"+
+      '<td class="mono">'+esc(c.rd||"—")+"</td>"+
+      '<td class="mono">'+c.links+"</td>"+
+      '<td>'+(c.flags?'<span class="fl">⚠ '+c.flags+"</span>":'<span class="mono" style="color:var(--faint)">—</span>')+"</td>"+
+      "<td>"+c.tags.map(t=>'<span class="tg">'+esc(t)+"</span>").join("")+"</td>"+
+    "</tr>";}).join("");
+  document.getElementById("none").style.display=rows.length?"none":"block";
+  document.getElementById("count").textContent=rows.length+" of "+ALL.length+" companies";
+  tb.querySelectorAll(".cmp").forEach(cb=>cb.addEventListener("change",()=>{
+    const key=cb.dataset.key;
+    if(cb.checked){if(sel.length>=5){cb.checked=false;return;}if(!sel.includes(key))sel.push(key);}
+    else sel=sel.filter(x=>x!==key);
+    syncBar();
+  }));
+  tb.querySelectorAll(".star").forEach(b=>b.addEventListener("click",()=>{
+    let w=watch();const entry=b.dataset.w,key=entry.split("|").slice(0,2).join("|");
+    if(w.some(x=>x.startsWith(key)))w=w.filter(x=>!x.startsWith(key));else w.push(entry);
+    setWatch(w);renderRows();
+  }));
+}
+function syncBar(){
+  document.getElementById("cn").textContent=sel.length;
+  document.getElementById("cbar").classList.toggle("show",sel.length>=2);
+}
+
+/* comparison: pull full records from each sector file */
+async function openCompare(){
+  const picks=[];
+  for(const key of sel.slice(0,5)){
+    const[sec,id]=key.split("|");
+    const p=await fetch("data/"+sec+".json").then(r=>r.json()).catch(()=>null);
+    if(!p)continue;
+    const c=p.companies.find(x=>x.id===id);
+    if(c)picks.push({sec,c});
+  }
+  if(picks.length<2)return;
+  const row=(label,fn)=>"<tr><th>"+label+"</th>"+picks.map(p=>"<td>"+fn(p.c,p.sec)+"</td>").join("")+"</tr>";
+  const U=v=>v&&String(v).trim()?esc(v):'<span style="color:var(--faint)">unknown</span>';
+  document.getElementById("ctable").innerHTML=
+    row("",(c,s)=>'<a href="company.html?sector='+encodeURIComponent(s)+"&id="+encodeURIComponent(c.id)+'">'+esc(c.name)+"</a>")+
+    row("Stage",c=>'<span class="st"><i style="background:'+(STAGE_C[c.stage]||STAGE_C.unknown)+'"></i>'+esc(c.stage)+"</span>")+
+    row("Founded",c=>c.founded||"—")+
+    row("HQ",c=>U(c.hq))+
+    row("Revenue (est.)",c=>U(c.intel.metrics.arr))+
+    row("Growth (est.)",c=>U(c.intel.metrics.growth))+
+    row("Margin",c=>U(c.intel.metrics.margin))+
+    row("Total raised",c=>U(c.funding))+
+    row("Last round",c=>U(c.round))+
+    row("Lead investors",c=>U(c.lead))+
+    row("Headcount",c=>U(c.hc))+
+    row("Founders",c=>U(c.fnd))+
+    row("Moat",c=>'<span class="sm">'+esc(c.intel.memo.moat)+"</span>")+
+    row("Top risk",c=>'<span class="sm">'+esc(c.intel.bear[0]||"—")+"</span>")+
+    row("Red flags",c=>c.intel.flags.length?'<span style="color:var(--red);font-family:var(--mono)">⚠ '+c.intel.flags.length+'</span><div class="sm">'+esc(c.intel.flags[0])+"</div>":"—")+
+    row("Recent news",c=>c.intel.changes.length?'<span class="sm">'+c.intel.changes.slice(0,2).map(x=>esc(x.text)).join("<br>")+"</span>":'<span class="sm" style="color:var(--faint)">no material changes</span>');
+  document.getElementById("overlay").classList.add("show");
+}
+</script>
+</body>
+</html>

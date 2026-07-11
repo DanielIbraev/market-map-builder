@@ -130,6 +130,54 @@
   .how .step .d{font-size:13px;color:var(--dim)}
   .how .step .t::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--violet-2);margin-right:9px;box-shadow:0 0 8px rgba(167,139,250,.8);vertical-align:2px}
   .foot{margin-top:44px;color:var(--faint);font-size:10px;font-family:var(--mono);letter-spacing:.18em;text-transform:uppercase;text-align:center;line-height:2}
+
+  /* ═══ intelligence desk ═══ */
+  .navlinks{position:absolute;top:22px;right:24px;z-index:3;display:flex;gap:10px}
+  .navlinks a{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
+    text-decoration:none;border:1px solid var(--hair);padding:8px 16px;border-radius:999px;transition:all .2s;background:rgba(11,8,18,.6)}
+  .navlinks a:hover{color:#fff;border-color:rgba(167,139,250,.6)}
+  .briefbar{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--hair);border-radius:10px;overflow:hidden;
+    background:var(--panel);margin:0 0 26px;opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
+  .briefbar.in{opacity:1;transform:none}
+  .briefbar .b{flex:1;min-width:130px;padding:14px 18px;border-left:1px solid var(--hair)}
+  .briefbar .b:first-child{border-left:none}
+  .briefbar .v{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums}
+  .briefbar .k{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-top:2px}
+  .desk{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;margin:0 0 56px;align-items:start}
+  @media(max-width:940px){.desk{grid-template-columns:1fr}}
+  .dpanel{background:var(--panel);border:1px solid var(--hair);border-radius:10px;overflow:hidden;
+    opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
+  .dpanel.in{opacity:1;transform:none}
+  .dhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--hair)}
+  .dhead h2{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);margin:0;font-weight:500}
+  .dhead h2::before{content:"▮ ";color:var(--violet)}
+  .dhint{font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase}
+  .feed{max-height:420px;overflow-y:auto;scrollbar-width:thin}
+  .fi{display:flex;gap:12px;padding:11px 18px;border-bottom:1px solid var(--hair);text-decoration:none;transition:background .15s;align-items:baseline}
+  .fi:hover{background:rgba(139,124,246,.06)}
+  .fi:last-child{border-bottom:none}
+  .fi .ic{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:3px;flex:none;
+    color:var(--fc,var(--violet-2));border:1px solid color-mix(in srgb,var(--fc,var(--violet-2)) 40%,transparent)}
+  .fi .fx{font-size:12.5px;color:var(--dim)}
+  .fi .fx b{color:var(--ink);font-weight:600}
+  .tabs{display:flex;gap:2px;padding:8px 12px 0}
+  .tab{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+    color:var(--faint);background:none;border:none;padding:7px 12px;border-radius:6px 6px 0 0;transition:color .2s}
+  .tab.on{color:var(--lav);background:rgba(139,124,246,.08)}
+  .trow{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--hair);text-decoration:none;transition:background .15s}
+  .trow:hover{background:rgba(139,124,246,.06)}
+  .trow:last-child{border-bottom:none}
+  .trow .rk{font-family:var(--mono);font-size:10px;color:var(--faint);width:16px;font-variant-numeric:tabular-nums}
+  .trow .tn{font-size:13px;font-weight:600;color:var(--ink);flex:1}
+  .trow .tv{font-family:var(--mono);font-size:11px;color:var(--violet-2);font-variant-numeric:tabular-nums}
+  .rrow{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--hair);text-decoration:none;transition:background .15s}
+  .rrow:hover{background:rgba(139,124,246,.06)}
+  .rrow:last-child{border-bottom:none}
+  .rrow .doc{color:var(--violet-2);font-size:13px}
+  .rrow .rn{font-size:12.5px;color:var(--ink);font-weight:550;flex:1}
+  .rrow .rs{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.06em}
+  .wempty{padding:18px;font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em;line-height:1.9}
+  .wempty a{color:var(--violet-2);text-decoration:none}
   @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001s!important;animation-delay:0s!important;transition-duration:.001s!important}
     .cat,.how{opacity:1;transform:none}.cat .chip{opacity:1}
@@ -141,6 +189,10 @@
 <section class="hero">
   <canvas id="globe"></canvas>
   <div class="hero-veil"></div>
+  <nav class="navlinks">
+    <a href="./screener.html">Screener</a>
+    <a href="#cats">Sectors</a>
+  </nav>
   <div class="hero-in">
     <p class="eyebrow">Sector Atlas · Market Intelligence</p>
     <h1>
@@ -161,6 +213,30 @@
 <div class="tickerwrap"><div class="ticker" id="ticker"></div></div>
 
 <div class="wrap">
+  <div class="briefbar" data-reveal id="briefbar"></div>
+
+  <div class="desk">
+    <section class="dpanel" data-reveal>
+      <div class="dhead"><h2>Intelligence feed</h2><span class="dhint">latest cycle · all sectors</span></div>
+      <div class="feed" id="feed"></div>
+    </section>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <section class="dpanel" data-reveal>
+        <div class="dhead"><h2>Trending companies</h2><span class="dhint" id="thint">by capital raised</span></div>
+        <div class="tabs" id="ttabs"></div>
+        <div id="tlist"></div>
+      </section>
+      <section class="dpanel" data-reveal>
+        <div class="dhead"><h2>My watchlist</h2><span class="dhint">stored in your browser</span></div>
+        <div id="mywatch"></div>
+      </section>
+      <section class="dpanel" data-reveal>
+        <div class="dhead"><h2>New reports</h2><span class="dhint">deep-intel dossiers</span></div>
+        <div id="reports"></div>
+      </section>
+    </div>
+  </div>
+
   <div class="searchbar"><input id="q" type="text" placeholder="▸ Search 75+ sub-sectors — try “defense”, “farming”, “payments”…" autocomplete="off"></div>
   <div id="cats"></div>
   <div id="noresults">No sub-sector matches — try a broader term.</div>
@@ -299,6 +375,58 @@ function build(cat){
     "<b>"+esc(x.n)+"</b> "+esc(x.r)+"</a>").join("");
   if(tk)document.getElementById("ticker").innerHTML=tk+tk;
   else document.querySelector(".tickerwrap").style.display="none";
+
+  /* ── daily brief ── */
+  const B=cat.brief||{};
+  document.getElementById("briefbar").innerHTML=[
+    [B.rounds||0,"funding rounds"],[B.ma||0,"M&A / mergers"],[B.exec||0,"leadership changes"],
+    [B.hiring||0,"hiring signals"],[B.regulatory||0,"regulatory updates"],[B.distress||0,"distress events"],
+  ].map(x=>'<div class="b"><div class="v">'+x[0]+'</div><div class="k">'+x[1]+"</div></div>").join("");
+
+  /* ── intelligence feed ── */
+  const FC={funding:"#a78bfa",ipo:"#fcd34d",ma:"#fda4af",acquisition:"#fda4af",distress:"#fb7185",
+            exec:"#fcd34d",hiring:"#34d399",regulatory:"#7dd3fc",product:"#c4b5fd",contracts:"#34d399"};
+  document.getElementById("feed").innerHTML=(cat.feed||[]).map(f=>
+    '<a class="fi" style="--fc:'+(FC[f.t]||"#a78bfa")+'" href="company.html?sector='+encodeURIComponent(f.s)+"&id="+encodeURIComponent(f.id)+'">'+
+    '<span class="ic">'+esc(f.t)+'</span><span class="fx"><b>'+esc(f.n)+"</b> — "+esc(f.x)+"</span></a>").join("")||
+    '<div class="wempty">No changes recorded yet.</div>';
+
+  /* ── trending tabs ── */
+  const T=cat.trending||{};
+  const tabs=[["funding","Top funded","by capital raised",c=>c.v?(c.v>=1000?"$"+(c.v/1000).toFixed(1)+"B":"$"+Math.round(c.v)+"M"):"—"],
+              ["recent","Recent rounds","latest reported rounds",c=>esc((c.rd||"").split("·")[2]||c.rd||"—")],
+              ["contested","Most contested","by competitive links",c=>c.links+" links"],
+              ["flagged","Red flags","most flags raised",c=>"⚠ "+c.flags]];
+  const tt=document.getElementById("ttabs"),tl=document.getElementById("tlist");
+  const showTab=k=>{
+    const t=tabs.find(x=>x[0]===k);
+    document.getElementById("thint").textContent=t[2];
+    tt.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.k===k));
+    tl.innerHTML=(T[k]||[]).map((c,ix)=>
+      '<a class="trow" href="company.html?sector='+encodeURIComponent(c.s)+"&id="+encodeURIComponent(c.id)+'">'+
+      '<span class="rk">'+String(ix+1).padStart(2,"0")+'</span><span class="tn">'+esc(c.n)+'</span>'+
+      '<span class="tv">'+t[3](c)+"</span></a>").join("");
+  };
+  tt.innerHTML=tabs.map(t=>'<button class="tab" data-k="'+t[0]+'">'+t[1]+"</button>").join("");
+  tt.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.k)));
+  showTab("funding");
+
+  /* ── my watchlist (localStorage) ── */
+  let W=[];try{W=JSON.parse(localStorage.getItem("atlas_watch")||"[]");}catch(_){}
+  const feedByKey={};(cat.feed||[]).forEach(f=>{(feedByKey[f.s+"|"+f.id]=feedByKey[f.s+"|"+f.id]||[]).push(f);});
+  document.getElementById("mywatch").innerHTML=W.length?W.map(w=>{
+    const[s,id,nm]=w.split("|");const upd=(feedByKey[s+"|"+id]||[]);
+    return '<a class="rrow" href="company.html?sector='+encodeURIComponent(s)+"&id="+encodeURIComponent(id)+'">'+
+      '<span class="doc">★</span><span class="rn">'+esc(nm||id)+
+      (upd.length?' <span style="color:var(--gold);font-family:var(--mono);font-size:10px">· '+upd.length+" update"+(upd.length>1?"s":"")+"</span>":"")+
+      '</span><span class="rs">'+esc(s.replace(/-/g," "))+"</span></a>";}).join("")
+    :'<div class="wempty">Nothing starred yet — ★ companies in the <a href="./screener.html">screener</a> or on any dossier, and their updates surface here.</div>';
+
+  /* ── new reports ── */
+  document.getElementById("reports").innerHTML=(cat.reports||[]).slice(0,8).map(r=>
+    '<a class="rrow" href="company.html?sector='+encodeURIComponent(r.s)+"&id="+encodeURIComponent(r.id)+'">'+
+    '<span class="doc">▤</span><span class="rn">Investment memo — '+esc(r.n)+'</span>'+
+    '<span class="rs">'+esc(r.secn)+"</span></a>").join("");
 
   const root=document.getElementById("cats");
   const groups=[...cat.categories];

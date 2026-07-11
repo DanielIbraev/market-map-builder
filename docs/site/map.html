@@ -594,7 +594,8 @@ function renderDossier(d){
     '<div class="fld"><div class="k">Target customer</div><div class="v">'+U(d.target)+"</div></div>"+
     '<div class="fld"><div class="k">Direct rivals</div><div class="rel">'+
       (rels.map(r=>'<button data-go="'+esc(r)+'">'+esc(byId[r].name)+"</button>").join("")||'<span style="color:var(--faint);font-size:12px">none recorded</span>')+"</div></div>"+
-    (d.src?'<div class="fld" style="margin:0"><div class="k">Source</div><a class="src" href="'+esc(d.src)+'" target="_blank" rel="noopener noreferrer">'+esc(d.src)+"</a></div>":"");
+    (d.src?'<div class="fld"><div class="k">Source</div><a class="src" href="'+esc(d.src)+'" target="_blank" rel="noopener noreferrer">'+esc(d.src)+"</a></div>":"")+
+    '<div class="fld" style="margin:0"><a class="src" style="color:var(--lav)" href="company.html?sector='+encodeURIComponent(SLUG)+"&id="+encodeURIComponent(d.id)+'">Open full dossier — memo · flags · SWOT →</a></div>';
   requestAnimationFrame(()=>{const b=document.getElementById("cb");if(b)b.style.width=cent+"%";});
   dossier.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>select(b.dataset.go)));
   dHint.textContent=d.id;
