@@ -38,3 +38,6 @@ Thumbs.db
 
 # Obsidian per-user state (keep app/graph settings, ignore volatile workspace)
 vault/**/.obsidian/workspace.json
+
+# Deploy bundles
+dist/

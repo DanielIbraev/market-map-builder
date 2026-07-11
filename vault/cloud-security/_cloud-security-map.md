@@ -1,14 +1,14 @@
 ---
 type: sector-map
 sector: Cloud security
-researched_at: 2026-07-10 21:18 UTC
-company_count: 12
+researched_at: 2026-07-11 00:13 UTC
+company_count: 8
 tags: [sector-map, cloud-security]
 ---
 
 # Cloud security — Market Map
 
-_12 companies · researched 2026-07-10 · source: mock_
+_8 companies · researched 2026-07-11 · source: mock_
 
 > ⚠️ **Sample data** (offline mock mode) — illustrative only, verify before citing.
 
@@ -16,58 +16,50 @@ _12 companies · researched 2026-07-10 · source: mock_
 
 | Company | Stage | Founded | Last round | One-liner | Verified |
 | --- | --- | --- | --- | --- | --- |
-| [[northwind-sample|Northwind (sample)]] | seed | — | — | Illustrative sample company #1 in the Cloud security space. | 2026-07-10 |
-| [[vantage-sample|Vantage (sample)]] | series A | — | — | Illustrative sample company #2 in the Cloud security space. | 2026-07-10 |
-| [[lumen-sample|Lumen (sample)]] | series B | — | — | Illustrative sample company #3 in the Cloud security space. | 2026-07-10 |
-| [[keystone-sample|Keystone (sample)]] | growth | — | — | Illustrative sample company #4 in the Cloud security space. | 2026-07-10 |
-| [[cadence-sample|Cadence (sample)]] | seed | — | — | Illustrative sample company #5 in the Cloud security space. | 2026-07-10 |
-| [[beacon-sample|Beacon (sample)]] | series A | — | — | Illustrative sample company #6 in the Cloud security space. | 2026-07-10 |
-| [[meridian-sample|Meridian (sample)]] | seed | — | — | Illustrative sample company #7 in the Cloud security space. | 2026-07-10 |
-| [[aperture-sample|Aperture (sample)]] | series A | — | — | Illustrative sample company #8 in the Cloud security space. | 2026-07-10 |
-| [[halcyon-sample|Halcyon (sample)]] | series B | — | — | Illustrative sample company #9 in the Cloud security space. | 2026-07-10 |
-| [[praxis-sample|Praxis (sample)]] | growth | — | — | Illustrative sample company #10 in the Cloud security space. | 2026-07-10 |
-| [[sable-sample|Sable (sample)]] | seed | — | — | Illustrative sample company #11 in the Cloud security space. | 2026-07-10 |
-| [[orbit-sample|Orbit (sample)]] | series A | — | — | Illustrative sample company #12 in the Cloud security space. | 2026-07-10 |
+| [[wiz|Wiz]] | acquired | 2020 | Google acquisition · ~$32B agreed · 2025 (reported) | Agentless cloud security platform (CNAPP) — fastest-scaling security startup ever. | 2026-07-11 |
+| [[orca-security|Orca Security]] | growth | 2019 | Series C ext. · ~$550M · 2021-10 | Agentless cloud security via SideScanning of workloads. | 2026-07-11 |
+| [[sysdig|Sysdig]] | growth | 2013 | Series G · ~$350M · 2021-12 | Runtime cloud security built on the open-source Falco project. | 2026-07-11 |
+| [[aqua-security|Aqua Security]] | growth | 2015 | Series E ext. · ~$60M · 2023-12 | Container and cloud-native application protection pioneer. | 2026-07-11 |
+| [[snyk|Snyk]] | growth | 2015 | Series G · ~$196M · 2022-12 | Developer-first security for code, dependencies, containers and IaC. | 2026-07-11 |
+| [[netskope|Netskope]] | public | 2012 | IPO · Nasdaq · 2025-09 (reported) | SASE/SSE platform for securing web, cloud and private app access. | 2026-07-11 |
+| [[zscaler|Zscaler]] | public | 2007 | IPO · Nasdaq · 2018 | Zero-trust exchange routing enterprise traffic through its security cloud. | 2026-07-11 |
+| [[lacework|Lacework]] | acquired | 2015 | Fortinet acquisition · ~$150M · 2024 (reported) | Cloud security platform; acquired by Fortinet after a sharp markdown. | 2026-07-11 |
 
 ## Landscape summary
 
-The Cloud security space is anchored by well-funded leaders such as Keystone (sample), Praxis (sample), which set the pace on capability and distribution. A wave of earlier-stage challengers — including Northwind (sample), Vantage (sample), Cadence (sample) — competes on focused differentiation and specific customer segments. The main axes of competition are product depth, integration into existing developer and buyer workflows, and go-to-market motion. White space remains around underserved verticals and workflows the incumbents treat as secondary. (This summary is generated from sample data — verify before citing.)
+The Cloud security space is anchored by well-funded leaders such as Orca Security, Sysdig, Aqua Security, which set the pace on capability and distribution. A wave of earlier-stage challengers — including a long tail of earlier-stage entrants — competes on focused differentiation and specific customer segments. The main axes of competition are product depth, integration into existing developer and buyer workflows, and go-to-market motion. White space remains around underserved verticals and workflows the incumbents treat as secondary. (This summary is generated from sample data — verify before citing.)
 
 ## Relationship graph
 
 ```mermaid
 graph TD
-  northwind_sample["Northwind (sample)"]
-  vantage_sample["Vantage (sample)"]
-  lumen_sample["Lumen (sample)"]
-  keystone_sample["Keystone (sample)"]
-  cadence_sample["Cadence (sample)"]
-  beacon_sample["Beacon (sample)"]
-  meridian_sample["Meridian (sample)"]
-  aperture_sample["Aperture (sample)"]
-  halcyon_sample["Halcyon (sample)"]
-  praxis_sample["Praxis (sample)"]
-  sable_sample["Sable (sample)"]
-  orbit_sample["Orbit (sample)"]
-  northwind_sample --> vantage_sample
-  northwind_sample --> lumen_sample
-  vantage_sample --> lumen_sample
-  vantage_sample --> keystone_sample
-  lumen_sample --> keystone_sample
-  lumen_sample --> cadence_sample
-  keystone_sample --> cadence_sample
-  keystone_sample --> beacon_sample
-  cadence_sample --> beacon_sample
-  cadence_sample --> meridian_sample
-  beacon_sample --> meridian_sample
-  beacon_sample --> aperture_sample
-  meridian_sample --> aperture_sample
-  meridian_sample --> halcyon_sample
-  aperture_sample --> halcyon_sample
-  aperture_sample --> praxis_sample
-  halcyon_sample --> praxis_sample
-  halcyon_sample --> sable_sample
-  praxis_sample --> sable_sample
-  praxis_sample --> orbit_sample
-  sable_sample --> orbit_sample
+  wiz["Wiz"]
+  orca_security["Orca Security"]
+  sysdig["Sysdig"]
+  aqua_security["Aqua Security"]
+  snyk["Snyk"]
+  netskope["Netskope"]
+  zscaler["Zscaler"]
+  lacework["Lacework"]
+  wiz --> orca_security
+  wiz --> sysdig
+  wiz --> aqua_security
+  wiz --> snyk
+  orca_security --> wiz
+  orca_security --> aqua_security
+  orca_security --> sysdig
+  sysdig --> aqua_security
+  sysdig --> orca_security
+  sysdig --> wiz
+  aqua_security --> sysdig
+  aqua_security --> orca_security
+  aqua_security --> wiz
+  snyk --> wiz
+  snyk --> aqua_security
+  netskope --> zscaler
+  netskope --> wiz
+  zscaler --> netskope
+  zscaler --> wiz
+  lacework --> wiz
+  lacework --> orca_security
 ```

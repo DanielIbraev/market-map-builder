@@ -1,14 +1,14 @@
 ---
 type: sector-map
 sector: Last-mile delivery
-researched_at: 2026-07-10 21:18 UTC
-company_count: 12
+researched_at: 2026-07-11 00:13 UTC
+company_count: 7
 tags: [sector-map, last-mile-delivery]
 ---
 
 # Last-mile delivery — Market Map
 
-_12 companies · researched 2026-07-10 · source: mock_
+_7 companies · researched 2026-07-11 · source: mock_
 
 > ⚠️ **Sample data** (offline mock mode) — illustrative only, verify before citing.
 
@@ -16,58 +16,40 @@ _12 companies · researched 2026-07-10 · source: mock_
 
 | Company | Stage | Founded | Last round | One-liner | Verified |
 | --- | --- | --- | --- | --- | --- |
-| [[northwind-sample|Northwind (sample)]] | seed | — | — | Illustrative sample company #1 in the Last-mile delivery space. | 2026-07-10 |
-| [[vantage-sample|Vantage (sample)]] | series A | — | — | Illustrative sample company #2 in the Last-mile delivery space. | 2026-07-10 |
-| [[lumen-sample|Lumen (sample)]] | series B | — | — | Illustrative sample company #3 in the Last-mile delivery space. | 2026-07-10 |
-| [[keystone-sample|Keystone (sample)]] | growth | — | — | Illustrative sample company #4 in the Last-mile delivery space. | 2026-07-10 |
-| [[cadence-sample|Cadence (sample)]] | seed | — | — | Illustrative sample company #5 in the Last-mile delivery space. | 2026-07-10 |
-| [[beacon-sample|Beacon (sample)]] | series A | — | — | Illustrative sample company #6 in the Last-mile delivery space. | 2026-07-10 |
-| [[meridian-sample|Meridian (sample)]] | seed | — | — | Illustrative sample company #7 in the Last-mile delivery space. | 2026-07-10 |
-| [[aperture-sample|Aperture (sample)]] | series A | — | — | Illustrative sample company #8 in the Last-mile delivery space. | 2026-07-10 |
-| [[halcyon-sample|Halcyon (sample)]] | series B | — | — | Illustrative sample company #9 in the Last-mile delivery space. | 2026-07-10 |
-| [[praxis-sample|Praxis (sample)]] | growth | — | — | Illustrative sample company #10 in the Last-mile delivery space. | 2026-07-10 |
-| [[sable-sample|Sable (sample)]] | seed | — | — | Illustrative sample company #11 in the Last-mile delivery space. | 2026-07-10 |
-| [[orbit-sample|Orbit (sample)]] | series A | — | — | Illustrative sample company #12 in the Last-mile delivery space. | 2026-07-10 |
+| [[zipline|Zipline]] | growth | 2014 | Series F · ~$330M · 2023-04 @ $4.2B | Autonomous drone logistics — from blood in Rwanda to Walmart home delivery. | 2026-07-11 |
+| [[nuro|Nuro]] | growth | 2016 | Series E · ~$600M · 2021-11 (Tiger); licensing pivot 2024 | Autonomous delivery vehicles; pivoted to licensing its AV stack. | 2026-07-11 |
+| [[serve-robotics|Serve Robotics]] | public | 2017 | Nasdaq listing · 2024 | Sidewalk delivery robots for Uber Eats and others; Nvidia-backed. | 2026-07-11 |
+| [[starship-technologies|Starship Technologies]] | growth | 2014 | Round · ~$90M · 2024-01 | Pioneer of sidewalk robots — millions of campus deliveries. | 2026-07-11 |
+| [[coco|Coco]] | series B | 2020 | Series B · ~$80M · 2025 (reported) | Remote-piloted delivery robots in LA, Chicago, Miami. | 2026-07-11 |
+| [[wing|Wing]] | growth | 2012 | Alphabet X graduation · 2018 | Alphabet's drone-delivery arm partnered with Walmart and DoorDash. | 2026-07-11 |
+| [[veho|Veho]] | series B | 2016 | Series B · ~$170M · 2022-02 @ $1.5B | Next-day e-commerce parcel delivery network built on crowdsourced drivers. | 2026-07-11 |
 
 ## Landscape summary
 
-The Last-mile delivery space is anchored by well-funded leaders such as Keystone (sample), Praxis (sample), which set the pace on capability and distribution. A wave of earlier-stage challengers — including Northwind (sample), Vantage (sample), Cadence (sample) — competes on focused differentiation and specific customer segments. The main axes of competition are product depth, integration into existing developer and buyer workflows, and go-to-market motion. White space remains around underserved verticals and workflows the incumbents treat as secondary. (This summary is generated from sample data — verify before citing.)
+The Last-mile delivery space is anchored by well-funded leaders such as Zipline, Nuro, Serve Robotics, which set the pace on capability and distribution. A wave of earlier-stage challengers — including a long tail of earlier-stage entrants — competes on focused differentiation and specific customer segments. The main axes of competition are product depth, integration into existing developer and buyer workflows, and go-to-market motion. White space remains around underserved verticals and workflows the incumbents treat as secondary. (This summary is generated from sample data — verify before citing.)
 
 ## Relationship graph
 
 ```mermaid
 graph TD
-  northwind_sample["Northwind (sample)"]
-  vantage_sample["Vantage (sample)"]
-  lumen_sample["Lumen (sample)"]
-  keystone_sample["Keystone (sample)"]
-  cadence_sample["Cadence (sample)"]
-  beacon_sample["Beacon (sample)"]
-  meridian_sample["Meridian (sample)"]
-  aperture_sample["Aperture (sample)"]
-  halcyon_sample["Halcyon (sample)"]
-  praxis_sample["Praxis (sample)"]
-  sable_sample["Sable (sample)"]
-  orbit_sample["Orbit (sample)"]
-  northwind_sample --> vantage_sample
-  northwind_sample --> lumen_sample
-  vantage_sample --> lumen_sample
-  vantage_sample --> keystone_sample
-  lumen_sample --> keystone_sample
-  lumen_sample --> cadence_sample
-  keystone_sample --> cadence_sample
-  keystone_sample --> beacon_sample
-  cadence_sample --> beacon_sample
-  cadence_sample --> meridian_sample
-  beacon_sample --> meridian_sample
-  beacon_sample --> aperture_sample
-  meridian_sample --> aperture_sample
-  meridian_sample --> halcyon_sample
-  aperture_sample --> halcyon_sample
-  aperture_sample --> praxis_sample
-  halcyon_sample --> praxis_sample
-  halcyon_sample --> sable_sample
-  praxis_sample --> sable_sample
-  praxis_sample --> orbit_sample
-  sable_sample --> orbit_sample
+  zipline["Zipline"]
+  nuro["Nuro"]
+  serve_robotics["Serve Robotics"]
+  starship_technologies["Starship Technologies"]
+  coco["Coco"]
+  wing["Wing"]
+  veho["Veho"]
+  zipline --> wing
+  zipline --> serve_robotics
+  zipline --> starship_technologies
+  nuro --> serve_robotics
+  nuro --> zipline
+  serve_robotics --> starship_technologies
+  serve_robotics --> coco
+  starship_technologies --> serve_robotics
+  starship_technologies --> coco
+  coco --> serve_robotics
+  coco --> starship_technologies
+  wing --> zipline
+  veho --> serve_robotics
 ```

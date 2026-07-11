@@ -37,6 +37,7 @@ def build_site(vault_path: str = "./vault", site_dir: str = DEFAULT_SITE_DIR,
     mapped = _mapped_sectors(vault_path)
     built: List[str] = []
     total_companies = 0
+    ticker: List[dict] = []
 
     for slug, meta in mapped.items():
         payload = _sector_payload(meta["name"], vault_path)
@@ -48,8 +49,13 @@ def build_site(vault_path: str = "./vault", site_dir: str = DEFAULT_SITE_DIR,
         total_companies += len(payload["companies"])
         mapped[slug]["companies"] = len(payload["companies"])
         mapped[slug]["source"] = payload["source"]
+        for c in payload["companies"]:
+            if c.get("round") and "unknown" not in c["round"].lower():
+                ticker.append({"n": c["name"], "r": c["round"], "s": slug, "st": c["stage"]})
 
     catalog = _catalog(mapped)
+    ticker.sort(key=lambda t: t["n"])
+    catalog["ticker"] = ticker[::2][:28] if len(ticker) > 28 else ticker
     with open(os.path.join(data_dir, "catalog.json"), "w", encoding="utf-8") as fh:
         json.dump(catalog, fh, ensure_ascii=False)
 

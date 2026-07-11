@@ -1,14 +1,14 @@
 ---
 type: sector-map
 sector: Vertical farming
-researched_at: 2026-07-10 21:18 UTC
-company_count: 12
+researched_at: 2026-07-11 00:13 UTC
+company_count: 7
 tags: [sector-map, vertical-farming]
 ---
 
 # Vertical farming — Market Map
 
-_12 companies · researched 2026-07-10 · source: mock_
+_7 companies · researched 2026-07-11 · source: mock_
 
 > ⚠️ **Sample data** (offline mock mode) — illustrative only, verify before citing.
 
@@ -16,58 +16,44 @@ _12 companies · researched 2026-07-10 · source: mock_
 
 | Company | Stage | Founded | Last round | One-liner | Verified |
 | --- | --- | --- | --- | --- | --- |
-| [[northwind-sample|Northwind (sample)]] | seed | — | — | Illustrative sample company #1 in the Vertical farming space. | 2026-07-10 |
-| [[vantage-sample|Vantage (sample)]] | series A | — | — | Illustrative sample company #2 in the Vertical farming space. | 2026-07-10 |
-| [[lumen-sample|Lumen (sample)]] | series B | — | — | Illustrative sample company #3 in the Vertical farming space. | 2026-07-10 |
-| [[keystone-sample|Keystone (sample)]] | growth | — | — | Illustrative sample company #4 in the Vertical farming space. | 2026-07-10 |
-| [[cadence-sample|Cadence (sample)]] | seed | — | — | Illustrative sample company #5 in the Vertical farming space. | 2026-07-10 |
-| [[beacon-sample|Beacon (sample)]] | series A | — | — | Illustrative sample company #6 in the Vertical farming space. | 2026-07-10 |
-| [[meridian-sample|Meridian (sample)]] | seed | — | — | Illustrative sample company #7 in the Vertical farming space. | 2026-07-10 |
-| [[aperture-sample|Aperture (sample)]] | series A | — | — | Illustrative sample company #8 in the Vertical farming space. | 2026-07-10 |
-| [[halcyon-sample|Halcyon (sample)]] | series B | — | — | Illustrative sample company #9 in the Vertical farming space. | 2026-07-10 |
-| [[praxis-sample|Praxis (sample)]] | growth | — | — | Illustrative sample company #10 in the Vertical farming space. | 2026-07-10 |
-| [[sable-sample|Sable (sample)]] | seed | — | — | Illustrative sample company #11 in the Vertical farming space. | 2026-07-10 |
-| [[orbit-sample|Orbit (sample)]] | series A | — | — | Illustrative sample company #12 in the Vertical farming space. | 2026-07-10 |
+| [[gotham-greens|Gotham Greens]] | growth | 2009 | Series E · ~$310M · 2022-09 | Greenhouse network growing leafy greens near US cities. | 2026-07-11 |
+| [[oishii|Oishii]] | series B | 2016 | Series B · ~$134M · 2024-02 | Premium vertical-farmed strawberries (the “Omakase berry”). | 2026-07-11 |
+| [[little-leaf-farms|Little Leaf Farms]] | growth | 2015 | Debt+equity · ~$300M · 2022-08 | Largest US greenhouse lettuce brand by retail share. | 2026-07-11 |
+| [[80-acres-farms|80 Acres Farms]] | series B | 2015 | Series B ext. · ~$160M · 2021-08 | Fully-automated indoor vertical farms in the US Midwest. | 2026-07-11 |
+| [[plenty|Plenty]] | unknown | 2014 | Chapter 11 filing · 2025 (reported); prior: $400M Series E 2022 (Walmart) | High-profile vertical-farming unicorn; filed for Chapter 11 in 2025. | 2026-07-11 |
+| [[aerofarms|AeroFarms]] | unknown | 2004 | Emerged from Ch.11 · 2023 (reported) | Aeroponic pioneer; restructured through Chapter 11 in 2023 and refocused on microgreens. | 2026-07-11 |
+| [[brightfarms|BrightFarms]] | acquired | 2010 | Cox Enterprises majority acquisition · 2021 | Greenhouse salads operator acquired by Cox Enterprises. | 2026-07-11 |
 
 ## Landscape summary
 
-The Vertical farming space is anchored by well-funded leaders such as Keystone (sample), Praxis (sample), which set the pace on capability and distribution. A wave of earlier-stage challengers — including Northwind (sample), Vantage (sample), Cadence (sample) — competes on focused differentiation and specific customer segments. The main axes of competition are product depth, integration into existing developer and buyer workflows, and go-to-market motion. White space remains around underserved verticals and workflows the incumbents treat as secondary. (This summary is generated from sample data — verify before citing.)
+The Vertical farming space is anchored by well-funded leaders such as Gotham Greens, Little Leaf Farms, which set the pace on capability and distribution. A wave of earlier-stage challengers — including a long tail of earlier-stage entrants — competes on focused differentiation and specific customer segments. The main axes of competition are product depth, integration into existing developer and buyer workflows, and go-to-market motion. White space remains around underserved verticals and workflows the incumbents treat as secondary. (This summary is generated from sample data — verify before citing.)
 
 ## Relationship graph
 
 ```mermaid
 graph TD
-  northwind_sample["Northwind (sample)"]
-  vantage_sample["Vantage (sample)"]
-  lumen_sample["Lumen (sample)"]
-  keystone_sample["Keystone (sample)"]
-  cadence_sample["Cadence (sample)"]
-  beacon_sample["Beacon (sample)"]
-  meridian_sample["Meridian (sample)"]
-  aperture_sample["Aperture (sample)"]
-  halcyon_sample["Halcyon (sample)"]
-  praxis_sample["Praxis (sample)"]
-  sable_sample["Sable (sample)"]
-  orbit_sample["Orbit (sample)"]
-  northwind_sample --> vantage_sample
-  northwind_sample --> lumen_sample
-  vantage_sample --> lumen_sample
-  vantage_sample --> keystone_sample
-  lumen_sample --> keystone_sample
-  lumen_sample --> cadence_sample
-  keystone_sample --> cadence_sample
-  keystone_sample --> beacon_sample
-  cadence_sample --> beacon_sample
-  cadence_sample --> meridian_sample
-  beacon_sample --> meridian_sample
-  beacon_sample --> aperture_sample
-  meridian_sample --> aperture_sample
-  meridian_sample --> halcyon_sample
-  aperture_sample --> halcyon_sample
-  aperture_sample --> praxis_sample
-  halcyon_sample --> praxis_sample
-  halcyon_sample --> sable_sample
-  praxis_sample --> sable_sample
-  praxis_sample --> orbit_sample
-  sable_sample --> orbit_sample
+  gotham_greens["Gotham Greens"]
+  oishii["Oishii"]
+  little_leaf_farms["Little Leaf Farms"]
+  n_80_acres_farms["80 Acres Farms"]
+  plenty["Plenty"]
+  aerofarms["AeroFarms"]
+  brightfarms["BrightFarms"]
+  gotham_greens --> little_leaf_farms
+  gotham_greens --> n_80_acres_farms
+  gotham_greens --> plenty
+  oishii --> plenty
+  oishii --> gotham_greens
+  little_leaf_farms --> gotham_greens
+  little_leaf_farms --> n_80_acres_farms
+  n_80_acres_farms --> plenty
+  n_80_acres_farms --> gotham_greens
+  n_80_acres_farms --> aerofarms
+  plenty --> oishii
+  plenty --> n_80_acres_farms
+  plenty --> aerofarms
+  aerofarms --> plenty
+  aerofarms --> n_80_acres_farms
+  brightfarms --> gotham_greens
+  brightfarms --> little_leaf_farms
 ```

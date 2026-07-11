@@ -1,14 +1,14 @@
 ---
 type: sector-map
 sector: Payments infrastructure
-researched_at: 2026-07-10 21:18 UTC
-company_count: 12
+researched_at: 2026-07-11 00:13 UTC
+company_count: 8
 tags: [sector-map, payments-infrastructure]
 ---
 
 # Payments infrastructure — Market Map
 
-_12 companies · researched 2026-07-10 · source: mock_
+_8 companies · researched 2026-07-11 · source: mock_
 
 > ⚠️ **Sample data** (offline mock mode) — illustrative only, verify before citing.
 
@@ -16,58 +16,49 @@ _12 companies · researched 2026-07-10 · source: mock_
 
 | Company | Stage | Founded | Last round | One-liner | Verified |
 | --- | --- | --- | --- | --- | --- |
-| [[northwind-sample|Northwind (sample)]] | seed | — | — | Illustrative sample company #1 in the Payments infrastructure space. | 2026-07-10 |
-| [[vantage-sample|Vantage (sample)]] | series A | — | — | Illustrative sample company #2 in the Payments infrastructure space. | 2026-07-10 |
-| [[lumen-sample|Lumen (sample)]] | series B | — | — | Illustrative sample company #3 in the Payments infrastructure space. | 2026-07-10 |
-| [[keystone-sample|Keystone (sample)]] | growth | — | — | Illustrative sample company #4 in the Payments infrastructure space. | 2026-07-10 |
-| [[cadence-sample|Cadence (sample)]] | seed | — | — | Illustrative sample company #5 in the Payments infrastructure space. | 2026-07-10 |
-| [[beacon-sample|Beacon (sample)]] | series A | — | — | Illustrative sample company #6 in the Payments infrastructure space. | 2026-07-10 |
-| [[meridian-sample|Meridian (sample)]] | seed | — | — | Illustrative sample company #7 in the Payments infrastructure space. | 2026-07-10 |
-| [[aperture-sample|Aperture (sample)]] | series A | — | — | Illustrative sample company #8 in the Payments infrastructure space. | 2026-07-10 |
-| [[halcyon-sample|Halcyon (sample)]] | series B | — | — | Illustrative sample company #9 in the Payments infrastructure space. | 2026-07-10 |
-| [[praxis-sample|Praxis (sample)]] | growth | — | — | Illustrative sample company #10 in the Payments infrastructure space. | 2026-07-10 |
-| [[sable-sample|Sable (sample)]] | seed | — | — | Illustrative sample company #11 in the Payments infrastructure space. | 2026-07-10 |
-| [[orbit-sample|Orbit (sample)]] | series A | — | — | Illustrative sample company #12 in the Payments infrastructure space. | 2026-07-10 |
+| [[stripe|Stripe]] | growth | 2010 | Series I / tender · ~$6.5B · 2023-03 @ $50B (reported) | Developer-first payments infrastructure powering millions of businesses. | 2026-07-11 |
+| [[adyen|Adyen]] | public | 2006 | IPO · Euronext · 2018 | Single-platform global payments processor for large merchants. | 2026-07-11 |
+| [[checkout-com|Checkout.com]] | growth | 2012 | Series D · ~$1B · 2022-01 @ $40B, later marked down (reported) | Enterprise payment processing across 150+ currencies and emerging markets. | 2026-07-11 |
+| [[plaid|Plaid]] | growth | 2013 | Round · ~$575M · 2025-04 (reported) | Bank-data connectivity layer linking consumer accounts to fintech apps. | 2026-07-11 |
+| [[marqeta|Marqeta]] | public | 2010 | IPO · Nasdaq · 2021 | Modern card-issuing API platform. | 2026-07-11 |
+| [[airwallex|Airwallex]] | growth | 2015 | Series F · ~$300M · 2025-05 @ $6.2B (reported) | Cross-border business accounts, FX and payments infrastructure. | 2026-07-11 |
+| [[rapyd|Rapyd]] | growth | 2016 | Series E · ~$300M · 2021-08 | Fintech-as-a-service: local payment rails in 100+ countries via one API. | 2026-07-11 |
+| [[modern-treasury|Modern Treasury]] | series C | 2018 | Series C · ~$50M · 2022-01 | Payment-operations and ledgering layer for money movement at scale. | 2026-07-11 |
 
 ## Landscape summary
 
-The Payments infrastructure space is anchored by well-funded leaders such as Keystone (sample), Praxis (sample), which set the pace on capability and distribution. A wave of earlier-stage challengers — including Northwind (sample), Vantage (sample), Cadence (sample) — competes on focused differentiation and specific customer segments. The main axes of competition are product depth, integration into existing developer and buyer workflows, and go-to-market motion. White space remains around underserved verticals and workflows the incumbents treat as secondary. (This summary is generated from sample data — verify before citing.)
+The Payments infrastructure space is anchored by well-funded leaders such as Stripe, Adyen, Checkout.com, which set the pace on capability and distribution. A wave of earlier-stage challengers — including a long tail of earlier-stage entrants — competes on focused differentiation and specific customer segments. The main axes of competition are product depth, integration into existing developer and buyer workflows, and go-to-market motion. White space remains around underserved verticals and workflows the incumbents treat as secondary. (This summary is generated from sample data — verify before citing.)
 
 ## Relationship graph
 
 ```mermaid
 graph TD
-  northwind_sample["Northwind (sample)"]
-  vantage_sample["Vantage (sample)"]
-  lumen_sample["Lumen (sample)"]
-  keystone_sample["Keystone (sample)"]
-  cadence_sample["Cadence (sample)"]
-  beacon_sample["Beacon (sample)"]
-  meridian_sample["Meridian (sample)"]
-  aperture_sample["Aperture (sample)"]
-  halcyon_sample["Halcyon (sample)"]
-  praxis_sample["Praxis (sample)"]
-  sable_sample["Sable (sample)"]
-  orbit_sample["Orbit (sample)"]
-  northwind_sample --> vantage_sample
-  northwind_sample --> lumen_sample
-  vantage_sample --> lumen_sample
-  vantage_sample --> keystone_sample
-  lumen_sample --> keystone_sample
-  lumen_sample --> cadence_sample
-  keystone_sample --> cadence_sample
-  keystone_sample --> beacon_sample
-  cadence_sample --> beacon_sample
-  cadence_sample --> meridian_sample
-  beacon_sample --> meridian_sample
-  beacon_sample --> aperture_sample
-  meridian_sample --> aperture_sample
-  meridian_sample --> halcyon_sample
-  aperture_sample --> halcyon_sample
-  aperture_sample --> praxis_sample
-  halcyon_sample --> praxis_sample
-  halcyon_sample --> sable_sample
-  praxis_sample --> sable_sample
-  praxis_sample --> orbit_sample
-  sable_sample --> orbit_sample
+  stripe["Stripe"]
+  adyen["Adyen"]
+  checkout_com["Checkout.com"]
+  plaid["Plaid"]
+  marqeta["Marqeta"]
+  airwallex["Airwallex"]
+  rapyd["Rapyd"]
+  modern_treasury["Modern Treasury"]
+  stripe --> adyen
+  stripe --> checkout_com
+  stripe --> airwallex
+  stripe --> plaid
+  adyen --> stripe
+  adyen --> checkout_com
+  checkout_com --> stripe
+  checkout_com --> adyen
+  checkout_com --> rapyd
+  plaid --> stripe
+  plaid --> modern_treasury
+  marqeta --> stripe
+  marqeta --> adyen
+  airwallex --> stripe
+  airwallex --> rapyd
+  airwallex --> checkout_com
+  rapyd --> airwallex
+  rapyd --> checkout_com
+  modern_treasury --> plaid
+  modern_treasury --> stripe
 ```

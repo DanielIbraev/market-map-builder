@@ -554,8 +554,9 @@ def _mock_landscape_summary(research: SectorResearch) -> str:
 
 def _mock_research(sector: str, num_companies: int) -> SectorResearch:
     from .models import slugify
+    from .mock_sectors import CURATED_SECTORS
 
-    curated = _CURATED_MOCK.get(slugify(sector))
+    curated = _CURATED_MOCK.get(slugify(sector)) or CURATED_SECTORS.get(slugify(sector))
     if curated is not None:
         companies = [Company(**c) for c in curated]
     else:
