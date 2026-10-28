@@ -14,11 +14,6 @@ database.
 
 ## Demo
 
-![Terminal + Obsidian demo](docs/demo.gif)
-
-> 📹 **Placeholder** — record a short terminal + Obsidian graph-view clip and drop
-> it in as `docs/demo.gif` (see [`docs/README.md`](docs/README.md)).
-
 A ready-to-open example vault is committed at
 [`vault/ai-coding-assistants/`](vault/ai-coding-assistants/) — clone the repo and
 open that folder in Obsidian to see the graph immediately, no API key required.
@@ -296,7 +291,11 @@ python -m tests.test_features        # provenance, digest, export, memo, watchli
 ├── tests/               # offline link-integrity + refresh tests
 ├── vault/               # generated vaults (example committed)
 ├── .claude/skills/market-map/SKILL.md
-├── docs/                # demo.gif goes here
+├── docs/                # static site build + docs
 ├── .env.example
 └── requirements.txt
 ```
+
+
+---
+Built by [Daniel Ibraev](https://danielibraev.com) · Finance + Data Science @ Springfield College
